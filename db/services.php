@@ -18,36 +18,39 @@
  * Web service local plugin template external functions and service definitions.
  *
  * @package    localmyddleware
- * @copyright  2011 Jerome Mouneyrac
+ * @copyright  2017 Myddleware
+ * @author     Myddleware ltd
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 // We defined the web service functions to install.
-	$functions = array(
-		'local_myddleware_get_users_last_access' => array(
-                'classname'   => 'local_myddleware_external',
-                'methodname'  => 'get_users_last_access',
-                'classpath'   => 'local/myddleware/externallib.php',
-                'description' => 'Return last access of users',
-                'type'        => 'read',
-        ),
-        'local_myddleware_get_users_completion' => array(
-                'classname'   => 'local_myddleware_external',
-                'methodname'  => 'get_users_completion',
-                'classpath'   => 'local/myddleware/externallib.php',
-                'description' => 'Return completion of users',
-                'type'        => 'read',
-        )
+$functions = array(
+    'local_myddleware_get_users_last_access' => array(
+            'classname'   => 'local_myddleware_external',
+            'methodname'  => 'get_users_last_access',
+            'classpath'   => 'local/myddleware/externallib.php',
+            'description' => 'Return last access of users',
+            'type'        => 'read',
+    ),
+    'local_myddleware_get_users_completion' => array(
+            'classname'   => 'local_myddleware_external',
+            'methodname'  => 'get_users_completion',
+            'classpath'   => 'local/myddleware/externallib.php',
+            'description' => 'Return completion of users',
+            'type'        => 'read',
+    )
 );
 
 // We define the services to install as pre-build services. A pre-build service is not editable by administrator.
 $services = array(
-		'Myddleware service' => array(
-					'functions' => array (
-							'local_myddleware_get_users_last_access',
-							'local_myddleware_get_users_completion'
-					),
-					'restrictedusers' => 0,
-					'enabled'=>1,
-				),
+    'Myddleware service' => array(
+                'functions' => array (
+                        'local_myddleware_get_users_last_access',
+                        'local_myddleware_get_users_completion'
+                ),
+                'restrictedusers' => 0,
+                'enabled' => 1,
+            ),
 );

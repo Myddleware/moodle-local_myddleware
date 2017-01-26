@@ -18,9 +18,13 @@
  * External Web Service Template
  *
  * @package    localmyddleware
- * @copyright  2011 Moodle Pty Ltd (http://moodle.com)
+ * @copyright  2017 Myddleware
+ * @author     Myddleware ltd
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->libdir . "/externallib.php");
 
 class local_myddleware_external extends external_api {
@@ -42,12 +46,12 @@ class local_myddleware_external extends external_api {
             )
         );
     }
-	
-	/**
+
+    /**
      * Returns description of method parameters
      * @return external_function_parameters
      */
-     public static function get_users_last_access_parameters() {
+    public static function get_users_last_access_parameters() {
         return new external_function_parameters(
             array(
                 'time_modified' => new external_value(
@@ -59,20 +63,20 @@ class local_myddleware_external extends external_api {
                 )
             )
         );
-    } 
+    }
 
 
     /**
      * Returns welcome message
      * @return string welcome message
      */
-	public static function get_users_completion($time_modified) {
+    public static function get_users_completion($timemodified) {
         global $USER, $DB;
 
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_users_completion_parameters(),
-            array('time_modified' => $time_modified)
+            array('time_modified' => $timemodified)
         );
 
         // Context validation.
@@ -83,45 +87,45 @@ class local_myddleware_external extends external_api {
 
         // Retrieve token list (including linked users firstname/lastname and linked services name).
         $sql = "
-				SELECT
-					cmc.id,
-					cmc.userid,
-					cmc.completionstate,
-					cmc.timemodified,
-					cm.module moduletype,
-					cm.instance,
-					cm.course courseid
-				FROM {course_modules_completion} cmc
-				INNER JOIN {course_modules} cm
-					ON cm.id = cmc.coursemoduleid
-				WHERE
-					cmc.timemodified > $time_modified
+                SELECT
+                    cmc.id,
+                    cmc.userid,
+                    cmc.completionstate,
+                    cmc.timemodified,
+                    cm.module moduletype,
+                    cm.instance,
+                    cm.course courseid
+                FROM {course_modules_completion} cmc
+                INNER JOIN {course_modules} cm
+                    ON cm.id = cmc.coursemoduleid
+                WHERE
+                    cmc.timemodified > $timemodified
                 ORDER BY timemodified ASC
                     ";
         $rs = $DB->get_recordset_sql($sql);
 
         $completions = array();
-		if (!empty($rs)) {
-			foreach ($rs as $completionrecords) {
-				foreach ($completionrecords as $key => $value) {
-					$completion[$key] = $value;
-				}
-				$completions[] = $completion;
-			}
-		}
+        if (!empty($rs)) {
+            foreach ($rs as $completionrecords) {
+                foreach ($completionrecords as $key => $value) {
+                    $completion[$key] = $value;
+                }
+                $completions[] = $completion;
+            }
+        }
         return $completions;
     }
 
-	/**
+    /**
      * Returns welcome message
      * @return string welcome message
      */
-	public static function get_users_last_access($time_modified) {
+    public static function get_users_last_access($timemodified) {
         global $USER, $DB;
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_users_completion_parameters(),
-            array('time_modified' => $time_modified)
+            array('time_modified' => $timemodified)
         );
 
         // Context validation.
@@ -131,30 +135,30 @@ class local_myddleware_external extends external_api {
         require_capability('moodle/user:viewdetails', $context);
 
         $sql = "
-				SELECT
-					la.id,
-					la.userid,
-					la.courseid,
-					la.timeaccess lastaccess
-				FROM {user_lastaccess} la
-				WHERE
-					la.timeaccess > $time_modified
-				";
+                SELECT
+                    la.id,
+                    la.userid,
+                    la.courseid,
+                    la.timeaccess lastaccess
+                FROM {user_lastaccess} la
+                WHERE
+                    la.timeaccess > $timemodified
+                ";
         $rs = $DB->get_recordset_sql($sql);
 
-        $last_access = array();
-		if (!empty($rs)) {
-			foreach ($rs as $lastaccessrecords) {
-				foreach ($lastaccessrecords as $key => $value) {
-					$access[$key] = $value;
-				}
-				$last_access[] = $access;
-			}
-		}
-        return $last_access;
-    } 
+        $lastaccess = array();
+        if (!empty($rs)) {
+            foreach ($rs as $lastaccessrecords) {
+                foreach ($lastaccessrecords as $key => $value) {
+                    $access[$key] = $value;
+                }
+                $lastaccess[] = $access;
+            }
+        }
+        return $lastaccess;
+    }
 
-	
+
     /**
      * Returns description of method result value
      * @return external_description
@@ -174,21 +178,21 @@ class local_myddleware_external extends external_api {
             )
         );
     }
-	
-	/**
+
+    /**
      * Returns description of method result value
      * @return external_description
      */
-	public static function get_users_last_access_returns() {
+    public static function get_users_last_access_returns() {
         return new external_multiple_structure(
             new external_single_structure(
                 array(
                     'id' => new external_value(PARAM_INT, get_string('return_id', 'local_myddleware')),
                     'userid' => new external_value(PARAM_INT, get_string('return_userid', 'local_myddleware')),
-					'courseid' => new external_value(PARAM_INT, get_string('return_courseid', 'local_myddleware')),
+                    'courseid' => new external_value(PARAM_INT, get_string('return_courseid', 'local_myddleware')),
                     'lastaccess' => new external_value(PARAM_INT, get_string('return_lastaccess', 'local_myddleware'))
                 )
             )
         );
-    } 
+    }
 }

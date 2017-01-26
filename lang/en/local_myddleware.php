@@ -17,10 +17,12 @@
 /**
  * Web service template plugin related strings
  * @package   localwstemplate
- * @copyright 2011 Moodle Pty Ltd (http://moodle.com)
- * @author    Jerome Mouneyrac
+ * @copyright 2017 Myddleware
+ * @author    Myddleware ltd
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Web service for Myddleware';
 $string['return_id'] = 'ID';
