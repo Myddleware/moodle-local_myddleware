@@ -1,4 +1,4 @@
-This Moodle 's module is not requeired to connect Myddleware and Moodle. It is requiered only if you want to read the last access and completion of Moodle 's users.
+This Moodle 's module is not required to connect Myddleware and Moodle. It is required only if you want to read the last access and completion of Moodle 's users.
 
 How to connect Myddleware and Moodle : http://community.myddleware.com/index.php/connector-guide/#moodle
 
