@@ -39,7 +39,7 @@ class local_myddleware_external extends external_api {
                 'time_modified' => new external_value(
                     PARAM_INT,
                     get_string('param_timemodified', 'local_myddleware'),
-                    VALUE_OPTIONAL,
+                    VALUE_DEFAULT,
                     0,
                     NULL_NOT_ALLOWED
                 )
@@ -57,7 +57,7 @@ class local_myddleware_external extends external_api {
                 'time_modified' => new external_value(
                     PARAM_INT,
                     get_string('param_timemodified', 'local_myddleware'),
-                    VALUE_OPTIONAL,
+                    VALUE_DEFAULT,
                     0,
                     NULL_NOT_ALLOWED
                 )
