@@ -68,7 +68,7 @@ class local_myddleware_external extends external_api {
 
     /**
      * This function search completion created after the date $timemodified in parameters
-     * @return an array with the detail of each completion (id, userid, completionstate, timemodified, moduletype,instance and courseid)
+     * @return an array with the detail of each completion (id,userid,completionstate,timemodified,moduletype,instance,courseid)
      */
     public static function get_users_completion($timemodified) {
         global $USER, $DB;
@@ -117,7 +117,7 @@ class local_myddleware_external extends external_api {
     }
 
     /**
-     * This function search the last access for all user and courses. Only access after the $timemodified are returned
+     * This function search the last access for all users and courses. Only access after the $timemodified are returned
      * @return an array with the detail of each access (id, userid, access time and courseid)
      */
     public static function get_users_last_access($timemodified) {
