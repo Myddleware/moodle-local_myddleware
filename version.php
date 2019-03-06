@@ -16,9 +16,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2016111800;
+$plugin->version  = 2019030100;
 $plugin->requires = 2010112400;
 $plugin->cron     = 0;
-$plugin->release = '1.0';
+$plugin->release = '1.1';
 $plugin->maturity = MATURITY_STABLE;
 $plugin->component = 'local_myddleware';
