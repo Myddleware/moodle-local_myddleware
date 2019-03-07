@@ -16,7 +16,7 @@
 
 /**
  * Web service template plugin related strings
- * @package   localwstemplate
+ * @package    mod_localmyddleware
  * @copyright 2017 Myddleware
  * @author    Myddleware ltd
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

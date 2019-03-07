@@ -13,7 +13,14 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
+/**
+ * External Web Service Template
+ *
+ * @package    mod_localmyddleware
+ * @copyright  2017 Myddleware
+ * @author     Myddleware ltd
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->version  = 2019030100;
