@@ -17,7 +17,7 @@
 /**
  * Web service local plugin template external functions and service definitions.
  *
- * @package    mod_localmyddleware
+ * @package    localmyddleware
  * @copyright  2017 Myddleware
  * @author     Myddleware ltd
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -71,8 +71,7 @@ $functions = array(
     )
 );
 
-// We define the services to install as pre-build services. 
-// A pre-build service is not editable by administrator.
+// We define the services to install as pre-build services. A pre-build service is not editable by administrator.
 $services = array(
     'Myddleware service' => array(
                 'functions' => array (
