@@ -324,15 +324,19 @@ class local_myddleware_external extends external_api {
         }
 
         // Select the users modified after the datime $timemodified.
-        $selectedusers = $DB->get_records_select('user', $where, array(), ' timemodified ASC ', 'id, timemodified');
+        $selectedusers = $DB->get_records_select('user', $where, array(), ' timemodified ASC ', 'id, timemodified,lastnamephonetic,firstnamephonetic,middlename,alternatename');
         $returnedusers = array();
         if (!empty($selectedusers)) {
             // Call function get_users for each user found.
             foreach ($selectedusers as $user) {
                 $userdetails = array();
                 $userdetails = core_user_external::get_users(array( 'criteria' => array( 'key' => 'id', 'value' => $user->id ) ));
-                // Add timemodified because this field is requiered by Myddleware.
+                // Add fields not returned by standard function.
                 $userdetails['users'][0]['timemodified'] = $user->timemodified;
+                $userdetails['users'][0]['lastnamephonetic'] = $user->lastnamephonetic;
+                $userdetails['users'][0]['firstnamephonetic'] = $user->firstnamephonetic;
+                $userdetails['users'][0]['middlename'] = $user->middlename;
+                $userdetails['users'][0]['alternatename'] = $user->alternatename;
                 $returnedusers[] = $userdetails['users'][0];
             }
         }
@@ -347,15 +351,44 @@ class local_myddleware_external extends external_api {
     public static function get_users_by_date_returns() {
         global $USER, $DB, $CFG;
         require_once($CFG->dirroot . "/user/externallib.php");
-        // Add field timemodified because it doesn't exist in the standard structure (even if exists in the database, table user).
+        // Add fields not returned by standard function even if exists in the database, table user.
         $timemodified = array(
-                'timemodified' => new external_value(
-                    PARAM_INT,
-                    get_string('param_timemodified', 'local_myddleware'),
-                    VALUE_DEFAULT,
-                    0,
-                    NULL_NOT_ALLOWED
-                ));
+                    'timemodified' => new external_value(
+                        PARAM_INT,
+                        get_string('param_timemodified', 'local_myddleware'),
+                        VALUE_DEFAULT,
+                        0,
+                        NULL_NOT_ALLOWED
+                    ),
+                    'lastnamephonetic' => new external_value(
+                        PARAM_TEXT,
+                        get_string('param_lastnamephonetic', 'local_myddleware'),
+                        VALUE_DEFAULT,
+                        0,
+                        NULL_NOT_ALLOWED
+                    ),
+                    'firstnamephonetic' => new external_value(
+                        PARAM_TEXT,
+                        get_string('param_firstnamephonetic', 'local_myddleware'),
+                        VALUE_DEFAULT,
+                        0,
+                        NULL_NOT_ALLOWED
+                    ),
+                    'middlename' => new external_value(
+                        PARAM_TEXT,
+                        get_string('param_middlename', 'local_myddleware'),
+                        VALUE_DEFAULT,
+                        0,
+                        NULL_NOT_ALLOWED
+                    ),
+                    'alternatename' => new external_value(
+                        PARAM_TEXT,
+                        get_string('param_alternatename', 'local_myddleware'),
+                        VALUE_DEFAULT,
+                        0,
+                        NULL_NOT_ALLOWED
+                    )
+                );
         // We use the same structure than in the function get_users.
         $userfields = core_user_external::user_description($timemodified);
         return new external_multiple_structure($userfields);
