@@ -324,7 +324,8 @@ class local_myddleware_external extends external_api {
         }
 
         // Select the users modified after the datime $timemodified.
-        $selectedusers = $DB->get_records_select('user', $where, array(), ' timemodified ASC ', 'id, timemodified,lastnamephonetic,firstnamephonetic,middlename,alternatename');
+        $additionalfields = 'id, timemodified,lastnamephonetic,firstnamephonetic,middlename,alternatename';
+        $selectedusers = $DB->get_records_select('user', $where, array(), ' timemodified ASC ', $additionalfields);
         $returnedusers = array();
         if (!empty($selectedusers)) {
             // Call function get_users for each user found.
