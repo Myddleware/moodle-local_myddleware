@@ -68,13 +68,6 @@ $functions = array(
             'classpath'   => 'local/myddleware/externallib.php',
             'description' => 'Return course completion list',
             'type'        => 'read',
-    ),
-    'local_myddleware_get_user_compentencies_by_date' => array(
-            'classname'   => 'local_myddleware_external',
-            'methodname'  => 'get_user_compentencies_by_date',
-            'classpath'   => 'local/myddleware/externallib.php',
-            'description' => 'Return user compencies list',
-            'type'        => 'read',
     )
 );
 
@@ -88,8 +81,7 @@ $services = array(
                         'local_myddleware_get_courses_by_date',
                         'local_myddleware_get_users_by_date',
                         'local_myddleware_get_enrolments_by_date',
-                        'local_myddleware_get_course_completion_by_date',
-                        'local_myddleware_get_user_compentencies_by_date'
+                        'local_myddleware_get_course_completion_by_date'
                 ),
                 'restrictedusers' => 0,
                 'enabled' => 1,
