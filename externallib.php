@@ -27,6 +27,8 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . "/externallib.php");
 
+use core_competency\user_competency;
+
 /**
  * Myddleware external functions
  *
@@ -260,7 +262,6 @@ class local_myddleware_external extends external_api {
 
         $returnedcourses = array();
         if (!empty($selectedcourses)) {
-            $courselist = array();
             // Call the function get_courses for each course to keep the timemodified order.
             foreach ($selectedcourses as $key => $value) {
                 // Call the standard API function to return the course detail.
@@ -595,4 +596,130 @@ class local_myddleware_external extends external_api {
     }
 
 
+     /**
+      * Returns description of method parameters.
+      * @return external_function_parameters.
+      */
+    public static function get_user_compentencies_by_date_parameters() {
+        return new external_function_parameters(
+            array(
+                'time_modified' => new external_value(
+                                           PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
+            )
+        );
+    }
+
+    /**
+     * This function search the user competencies created or modified after after the datime $timemodified.
+     * @param int $timemodified
+     * @param int $id
+     * @return the list of course.
+     */
+    public static function get_user_compentencies_by_date($timemodified, $id) {
+        global $USER, $DB;
+        // Parameter validation.
+        $params = self::validate_parameters(
+            self::get_user_compentencies_by_date_parameters(),
+            array('time_modified' => $timemodified, 'id' => $id)
+        );
+
+        // Context validation.
+        $context = context_user::instance($USER->id);
+        self::validate_context($context);
+        require_capability('moodle/competency:usercompetencyview', $context);
+
+        // Prepare the query condition.
+        if (!empty($id)) {
+            $where = ' id = '.$params['id'];
+        } else {
+            $where = ' timemodified > '.$params['time_modified'];
+        }
+
+        // Select the user compencies modified after the datime $timemodified. We select them order by timemodified ascending.
+        $selectedusercompetencies = $DB->get_records_select('competency_usercomp', $where, array(), ' timemodified ASC ');
+
+        // Prepare result.
+        $returnedusercompetencies = array();
+        if (!empty($selectedusercompetencies)) {
+            foreach ($selectedusercompetencies as $selectedusercompetency) {
+                // Add competency header data to the user compentency.
+                $competency = user_competency::get_competency_by_usercompetencyid($selectedusercompetency->id);
+                $selectedusercompetency->competency_shortname                 = $competency->get('shortname');
+                $selectedusercompetency->competency_description             = $competency->get('description');
+                $selectedusercompetency->competency_descriptionformat         = $competency->get('descriptionformat');
+                $selectedusercompetency->competency_idnumber                 = $competency->get('idnumber');
+                $selectedusercompetency->competency_competencyframeworkid     = $competency->get('competencyframeworkid');
+                $selectedusercompetency->competency_parentid                 = $competency->get('parentid');
+                $selectedusercompetency->competency_path                     = $competency->get('path');
+                $selectedusercompetency->competency_sortorder                 = $competency->get('sortorder');
+                $selectedusercompetency->competency_ruletype                 = $competency->get('ruletype');
+                $selectedusercompetency->competency_ruleoutcome             = $competency->get('ruleoutcome');
+                $selectedusercompetency->competency_ruleconfig                 = $competency->get('ruleconfig');
+                $selectedusercompetency->competency_scaleid                 = $competency->get('scaleid');
+                $selectedusercompetency->competency_scaleconfiguration         = $competency->get('scaleconfiguration');
+                $selectedusercompetency->competency_timecreated             = $competency->get('timecreated');
+                $selectedusercompetency->competency_timemodified             = $competency->get('timemodified');
+                $selectedusercompetency->competency_usermodified            = $competency->get('usermodified');
+                $returnedusercompetencies[] = $selectedusercompetency;
+            }
+        }
+        return $returnedusercompetencies;
+    }
+
+
+    /**
+     * Returns description of method result value.
+     * @return external_description.
+     */
+    public static function get_user_compentencies_by_date_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                array(
+                    'id' => new external_value(PARAM_INT, get_string('return_id', 'local_myddleware')),
+                    'userid' => new external_value(PARAM_INT, get_string('return_userid', 'local_myddleware')),
+                    'competencyid' => new external_value(PARAM_INT, get_string('return_competencyid', 'local_myddleware')),
+                    'status' => new external_value(PARAM_INT, get_string('return_status', 'local_myddleware')),
+                    'reviewerid' => new external_value(PARAM_INT, get_string('return_reviewerid', 'local_myddleware')),
+                    'proficiency' => new external_value(PARAM_INT, get_string('return_proficiency', 'local_myddleware')),
+                    'grade' => new external_value(PARAM_INT, get_string('return_grade', 'local_myddleware')),
+                    'timecreated' => new external_value(PARAM_INT, get_string('return_timecreated', 'local_myddleware')),
+                    'timemodified' => new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware')),
+                    'usermodified' => new external_value(PARAM_INT, get_string('return_usermodified', 'local_myddleware')),
+                    'competency_shortname' => new external_value(
+                        PARAM_TEXT, get_string('return_competency_shortname', 'local_myddleware')),
+                    'competency_description' => new external_value(
+                        PARAM_TEXT, get_string('return_competency_description', 'local_myddleware')),
+                    'competency_descriptionformat' => new external_value(
+                        PARAM_INT, get_string('return_competency_descriptionformat', 'local_myddleware')),
+                    'competency_idnumber' => new external_value(
+                        PARAM_TEXT, get_string('return_competency_idnumber', 'local_myddleware')),
+                    'competency_competencyframeworkid' => new external_value(
+                        PARAM_INT, get_string('return_competency_competencyframeworkid', 'local_myddleware')),
+                    'competency_parentid' => new external_value(
+                        PARAM_INT, get_string('return_competency_parentid', 'local_myddleware')),
+                    'competency_path' => new external_value(
+                        PARAM_TEXT, get_string('return_competency_path', 'local_myddleware')),
+                    'competency_sortorder' => new external_value(
+                        PARAM_INT, get_string('return_competency_sortorder', 'local_myddleware')),
+                    'competency_ruletype' => new external_value(
+                        PARAM_TEXT, get_string('return_competency_ruletype', 'local_myddleware')),
+                    'competency_ruleoutcome' => new external_value(
+                        PARAM_INT, get_string('return_competency_ruleoutcome', 'local_myddleware')),
+                    'competency_ruleconfig' => new external_value(
+                        PARAM_TEXT, get_string('return_competency_ruleconfig', 'local_myddleware')),
+                    'competency_scaleid' => new external_value(
+                        PARAM_INT, get_string('return_competency_scaleid', 'local_myddleware')),
+                    'competency_scaleconfiguration' => new external_value(
+                        PARAM_TEXT, get_string('return_competency_scaleconfiguration', 'local_myddleware')),
+                    'competency_timecreated' => new external_value(
+                        PARAM_INT, get_string('return_competency_timecreated', 'local_myddleware')),
+                    'competency_timemodified' => new external_value(
+                        PARAM_INT, get_string('return_competency_timemodified', 'local_myddleware')),
+                    'competency_usermodified' => new external_value(
+                        PARAM_INT, get_string('return_competency_usermodified', 'local_myddleware'))
+                )
+            )
+        );
+    }
 }
