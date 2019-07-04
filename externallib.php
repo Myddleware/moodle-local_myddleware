@@ -366,29 +366,25 @@ class local_myddleware_external extends external_api {
                         PARAM_TEXT,
                         get_string('param_lastnamephonetic', 'local_myddleware'),
                         VALUE_DEFAULT,
-                        0,
-                        NULL_NOT_ALLOWED
+                        0
                     ),
                     'firstnamephonetic' => new external_value(
                         PARAM_TEXT,
                         get_string('param_firstnamephonetic', 'local_myddleware'),
                         VALUE_DEFAULT,
-                        0,
-                        NULL_NOT_ALLOWED
+                        0
                     ),
                     'middlename' => new external_value(
                         PARAM_TEXT,
                         get_string('param_middlename', 'local_myddleware'),
                         VALUE_DEFAULT,
-                        0,
-                        NULL_NOT_ALLOWED
+                        0
                     ),
                     'alternatename' => new external_value(
                         PARAM_TEXT,
                         get_string('param_alternatename', 'local_myddleware'),
                         VALUE_DEFAULT,
-                        0,
-                        NULL_NOT_ALLOWED
+                        0
                     )
                 );
         // We use the same structure than in the function get_users.
