@@ -88,8 +88,10 @@ class local_myddleware_external extends external_api {
                     cmc.userid,
                     cmc.completionstate,
                     cmc.timemodified,
+                    cm.id coursemoduleid,
                     cm.module moduletype,
                     cm.instance,
+                    cm.section,
                     cm.course courseid
                 FROM {course_modules_completion} cmc
                 INNER JOIN {course_modules} cm
@@ -123,7 +125,9 @@ class local_myddleware_external extends external_api {
                     'id' => new external_value(PARAM_INT, get_string('return_id', 'local_myddleware')),
                     'userid' => new external_value(PARAM_INT, get_string('return_userid', 'local_myddleware')),
                     'instance' => new external_value(PARAM_INT, get_string('return_instance', 'local_myddleware')),
+                    'section' => new external_value(PARAM_INT, get_string('return_section', 'local_myddleware')),
                     'courseid' => new external_value(PARAM_INT, get_string('return_courseid', 'local_myddleware')),
+                    'coursemoduleid' => new external_value(PARAM_INT, get_string('return_coursemoduleid', 'local_myddleware')),
                     'moduletype' => new external_value(PARAM_INT, get_string('return_moduletype', 'local_myddleware')),
                     'completionstate' => new external_value(PARAM_INT, get_string('return_completionstate', 'local_myddleware')),
                     'timemodified' => new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware'))
@@ -714,6 +718,93 @@ class local_myddleware_external extends external_api {
                         PARAM_INT, get_string('return_competency_timemodified', 'local_myddleware')),
                     'competency_usermodified' => new external_value(
                         PARAM_INT, get_string('return_competency_usermodified', 'local_myddleware'))
+                )
+            )
+        );
+    }
+
+     /**
+      * Returns description of method parameters.
+      * @return external_function_parameters.
+      */
+    public static function get_competency_module_completion_by_date_parameters() {
+        return new external_function_parameters(
+            array(
+                'time_modified' => new external_value(
+                                           PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
+            )
+        );
+    }
+
+    /**
+     * This function search the user competencies created or modified after after the datime $timemodified.
+     * @param int $timemodified
+     * @param int $id
+     * @return the list of course.
+     */
+    public static function get_competency_module_completion_by_date($timemodified, $id) {
+        global $USER, $DB;
+        // Parameter validation.
+        $params = self::validate_parameters(
+            self::get_user_compentencies_by_date_parameters(),
+            array('time_modified' => $timemodified, 'id' => $id)
+        );
+
+        // Context validation.
+        $context = context_user::instance($USER->id);
+        self::validate_context($context);
+        require_capability('moodle/competency:usercompetencyview', $context);
+
+        // Prepare the query condition.
+        if (!empty($id)) {
+            $where = ' id = '.$params['id'];
+        } else {
+            $where = ' timemodified > '.$params['time_modified'];
+        }
+
+        // Select the user compencies modified after the datime $timemodified. We select them order by timemodified ascending.
+        $selectedcompetencymodulecompletions = $DB->get_records_select(
+                                                         'competency_modulecomp', $where, array(), ' timemodified ASC ');
+
+        // Prepare result.
+        $returnedcompetencymodulecompletion = array();
+        if (!empty($selectedcompetencymodulecompletions)) {
+            foreach ($selectedcompetencymodulecompletions as $selectedcompetencymodulecompletion) {
+                $competencymodulecompletion = [
+                    'id'           => $selectedcompetencymodulecompletion->id,
+                    'cmid'         => $selectedcompetencymodulecompletion->cmid,
+                    'timecreated'  => $selectedcompetencymodulecompletion->timecreated,
+                    'timemodified' => $selectedcompetencymodulecompletion->timemodified,
+                    'usermodified' => $selectedcompetencymodulecompletion->usermodified,
+                    'sortorder'    => $selectedcompetencymodulecompletion->sortorder,
+                    'competencyid' => $selectedcompetencymodulecompletion->competencyid,
+                    'ruleoutcome'  => $selectedcompetencymodulecompletion->ruleoutcome
+                ];
+                // Prepare result.
+                $returnedcompetencymodulecompletion[] = $competencymodulecompletion;
+            }
+        }
+        return $returnedcompetencymodulecompletion;
+    }
+
+
+    /**
+     * Returns description of method result value.
+     * @return external_description.
+     */
+    public static function get_competency_module_completion_by_date_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                array(
+                    'id' => new external_value(PARAM_INT, get_string('return_id', 'local_myddleware')),
+                    'cmid' => new external_value(PARAM_INT, get_string('return_coursemoduleid', 'local_myddleware')),
+                    'timecreated' => new external_value(PARAM_INT, get_string('return_timecreated', 'local_myddleware')),
+                    'timemodified' => new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware')),
+                    'usermodified' => new external_value(PARAM_INT, get_string('return_usermodified', 'local_myddleware')),
+                    'sortorder' => new external_value(PARAM_INT, get_string('return_sortorder', 'local_myddleware')),
+                    'competencyid' => new external_value(PARAM_INT, get_string('return_competencyid', 'local_myddleware')),
+                    'ruleoutcome' => new external_value(PARAM_INT, get_string('return_ruleoutcome', 'local_myddleware'))
                 )
             )
         );
