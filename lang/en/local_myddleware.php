@@ -74,3 +74,5 @@ $string['return_competency_timemodified'] = 'Competency time modified';
 $string['return_competency_usermodified'] = 'Competency user modified';
 $string['return_sortorder'] = 'Sort order';
 $string['return_ruleoutcome'] = 'Rule outcome';
+$string['return_modulename'] = 'Module name';
+$string['return_coursemodulename'] = 'Course module name';

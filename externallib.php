@@ -108,6 +108,11 @@ class local_myddleware_external extends external_api {
                 foreach ($completionrecords as $key => $value) {
                     $completion[$key] = $value;
                 }
+                // Add information about the module.
+                $modinfo = get_fast_modinfo($completion['courseid']);
+                $cm = $modinfo->get_cm($completion['coursemoduleid']);
+                $completion['modulename'] = $cm->modname;
+                $completion['coursemodulename'] = $cm->name;
                 $completions[] = $completion;
             }
         }
@@ -129,6 +134,8 @@ class local_myddleware_external extends external_api {
                     'courseid' => new external_value(PARAM_INT, get_string('return_courseid', 'local_myddleware')),
                     'coursemoduleid' => new external_value(PARAM_INT, get_string('return_coursemoduleid', 'local_myddleware')),
                     'moduletype' => new external_value(PARAM_INT, get_string('return_moduletype', 'local_myddleware')),
+                    'modulename' => new external_value(PARAM_TEXT, get_string('return_modulename', 'local_myddleware')),
+                    'coursemodulename' => new external_value(PARAM_TEXT, get_string('return_coursemodulename', 'local_myddleware')),
                     'completionstate' => new external_value(PARAM_INT, get_string('return_completionstate', 'local_myddleware')),
                     'timemodified' => new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware'))
                 )
@@ -781,6 +788,17 @@ class local_myddleware_external extends external_api {
                     'competencyid' => $selectedcompetencymodulecompletion->competencyid,
                     'ruleoutcome'  => $selectedcompetencymodulecompletion->ruleoutcome
                 ];
+                // Get the course id.
+                $selectedcoursemodule = $DB->get_records_select(
+                                                 'course_modules', 'id = '.$selectedcompetencymodulecompletion->cmid, array(), '');
+                $competencymodulecompletion['courseid'] = current($selectedcoursemodule)->course;
+                if (!empty($competencymodulecompletion['courseid'])) {
+                    // Add information about the module.
+                    $modinfo = get_fast_modinfo($competencymodulecompletion['courseid']);
+                    $cm = $modinfo->get_cm($selectedcompetencymodulecompletion->cmid);
+                    $competencymodulecompletion['modulename'] = $cm->modname;
+                    $competencymodulecompletion['coursemodulename'] = $cm->name;
+                }
                 // Prepare result.
                 $returnedcompetencymodulecompletion[] = $competencymodulecompletion;
             }
@@ -804,7 +822,10 @@ class local_myddleware_external extends external_api {
                     'usermodified' => new external_value(PARAM_INT, get_string('return_usermodified', 'local_myddleware')),
                     'sortorder' => new external_value(PARAM_INT, get_string('return_sortorder', 'local_myddleware')),
                     'competencyid' => new external_value(PARAM_INT, get_string('return_competencyid', 'local_myddleware')),
-                    'ruleoutcome' => new external_value(PARAM_INT, get_string('return_ruleoutcome', 'local_myddleware'))
+                    'ruleoutcome' => new external_value(PARAM_INT, get_string('return_ruleoutcome', 'local_myddleware')),
+                    'courseid' => new external_value(PARAM_INT, get_string('return_courseid', 'local_myddleware')),
+                    'modulename' => new external_value(PARAM_TEXT, get_string('return_modulename', 'local_myddleware')),
+                    'coursemodulename' => new external_value(PARAM_TEXT, get_string('return_coursemodulename', 'local_myddleware'))
                 )
             )
         );
