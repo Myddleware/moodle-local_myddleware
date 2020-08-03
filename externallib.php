@@ -830,4 +830,133 @@ class local_myddleware_external extends external_api {
             )
         );
     }
+
+    /**
+     * Returns description of method parameters.
+     * @return external_function_parameters.
+     */
+    public static function get_user_grades_parameters() {
+        return new external_function_parameters(
+            array(
+                'time_modified' => new external_value(
+                                           PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
+            )
+        );
+    }
+
+    /**
+     * This function search completion created after the date $timemodified in parameters.
+     * @param int $timemodified
+     * @param int $id
+     * @return an array with the detail of each completion (id,userid,completionstate,timemodified,moduletype,instance,courseid).
+     */
+    public static function get_user_grades($timemodified, $id) {
+        global $USER, $DB;
+
+        // Parameter validation.
+        $params = self::validate_parameters(
+            self::get_users_completion_parameters(),
+            array('time_modified' => $timemodified, 'id' => $id)
+        );
+
+        // Context validation.
+        $context = context_user::instance($USER->id);
+        self::validate_context($context);
+
+        require_capability('moodle/user:viewdetails', $context);
+
+        // Prepare the query condition.
+        if (!empty($id)) {
+            $where = ' grd.id = '.$params['id'];
+        } else {
+            $where = ' grd.timemodified > '.$params['time_modified'];
+        }
+
+        // Retrieve token list (including linked users firstname/lastname and linked services name).
+        $sql = "
+                SELECT
+                    id,
+                    itemid,
+                    userid,
+                    rawgrade,
+                    rawgrademax,
+                    rawgrademin,
+                    rawscaleid,
+                    usermodified,
+                    finalgrade,
+                    hidden,
+                    locked,
+                    locktime,
+                    exported,
+                    overridden,
+                    excluded,
+                    feedback,
+                    feedbackformat,
+                    information,
+                    informationformat,
+                    timecreated,
+                    timemodified,
+                    aggregationstatus,
+                    aggregationweight
+                FROM {grade_grades} grd
+                WHERE
+                    ".$where."
+                ORDER BY timemodified ASC, id ASC
+                    ";
+        $rs = $DB->get_recordset_sql($sql);
+
+        $grades = array();
+        if (!empty($rs)) {
+            foreach ($rs as $graderecords) {
+                foreach ($graderecords as $key => $value) {
+                    $grade[$key] = $value;
+                }
+                // Add information about the module.
+                $modinfo = get_fast_modinfo($grade['courseid']);
+                $cm = $modinfo->get_cm($grade['coursemoduleid']);
+                $grade['modulename'] = $cm->modname;
+                $grade['coursemodulename'] = $cm->name;
+                $grades[] = $grade;
+            }
+        }
+        return $grades;
+    }
+    
+     /**
+     * Returns description of method result value.
+     * @return external_description.
+     */
+    public static function get_user_grades_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                array(
+                    'id' => new external_value(PARAM_INT, get_string('return_id', 'local_myddleware')),
+                    'itemid' => new external_value(PARAM_INT, get_string('return_itemid', 'local_myddleware')),
+                    'userid' => new external_value(PARAM_INT, get_string('return_userid', 'local_myddleware')),
+                    'rawgrade' => new external_value(PARAM_FLOAT, get_string('return_rawgrade', 'local_myddleware')),
+                    'rawgrademax' => new external_value(PARAM_FLOAT, get_string('return_rawgrademax', 'local_myddleware')),
+                    'rawgrademin' => new external_value(PARAM_FLOAT, get_string('return_rawgrademin', 'local_myddleware')),
+                    'rawscaleid' => new external_value(PARAM_INT, get_string('return_rawscaleid', 'local_myddleware')),
+                    'usermodified' => new external_value(PARAM_INT, get_string('return_usermodified', 'local_myddleware')),
+                    'finalgrade' => new external_value(PARAM_FLOAT, get_string('return_finalgrade', 'local_myddleware')),
+                    'hidden' => new external_value(PARAM_INT, get_string('return_hidden', 'local_myddleware')),
+                    'locked' => new external_value(PARAM_INT, get_string('return_locked', 'local_myddleware')),
+                    'locktime' => new external_value(PARAM_INT, get_string('return_locktime', 'local_myddleware')),
+                    'exported' => new external_value(PARAM_INT, get_string('return_exported', 'local_myddleware')),
+                    'overridden' => new external_value(PARAM_INT, get_string('return_overridden', 'local_myddleware')),
+                    'excluded' => new external_value(PARAM_INT, get_string('return_excluded', 'local_myddleware')),
+                    'feedback' => new external_value(PARAM_TEXT, get_string('return_feedback', 'local_myddleware')),
+                    'feedbackformat' => new external_value(PARAM_INT, get_string('return_feedbackformat', 'local_myddleware')),
+                    'information' => new external_value(PARAM_TEXT, get_string('return_information', 'local_myddleware')),
+                    'informationformat' => new external_value(PARAM_INT, get_string('return_informationformat', 'local_myddleware')),
+                    'timecreated' => new external_value(PARAM_INT, get_string('return_timecreated', 'local_myddleware')),
+                    'timemodified' => new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware')),
+                    'aggregationstatus' => new external_value(PARAM_TEXT, get_string('return_aggregationstatus', 'local_myddleware')),
+                    'aggregationweight' => new external_value(PARAM_FLOAT, get_string('return_aggregationweight', 'local_myddleware'))
+                )
+            )
+        );
+    }
+
 }
