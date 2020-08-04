@@ -912,11 +912,6 @@ class local_myddleware_external extends external_api {
                 foreach ($graderecords as $key => $value) {
                     $grade[$key] = $value;
                 }
-                // Add information about the module.
-                $modinfo = get_fast_modinfo($grade['courseid']);
-                $cm = $modinfo->get_cm($grade['coursemoduleid']);
-                $grade['modulename'] = $cm->modname;
-                $grade['coursemodulename'] = $cm->name;
                 $grades[] = $grade;
             }
         }
