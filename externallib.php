@@ -917,11 +917,11 @@ class local_myddleware_external extends external_api {
         }
         return $grades;
     }
-    
+
      /**
-     * Returns description of method result value.
-     * @return external_description.
-     */
+      * Returns description of method result value.
+      * @return external_description.
+      */
     public static function get_user_grades_returns() {
         return new external_multiple_structure(
             new external_single_structure(
@@ -944,11 +944,14 @@ class local_myddleware_external extends external_api {
                     'feedback' => new external_value(PARAM_TEXT, get_string('return_feedback', 'local_myddleware')),
                     'feedbackformat' => new external_value(PARAM_INT, get_string('return_feedbackformat', 'local_myddleware')),
                     'information' => new external_value(PARAM_TEXT, get_string('return_information', 'local_myddleware')),
-                    'informationformat' => new external_value(PARAM_INT, get_string('return_informationformat', 'local_myddleware')),
+                    'informationformat' => new external_value(
+                        PARAM_INT, get_string('return_informationformat', 'local_myddleware')),
                     'timecreated' => new external_value(PARAM_INT, get_string('return_timecreated', 'local_myddleware')),
                     'timemodified' => new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware')),
-                    'aggregationstatus' => new external_value(PARAM_TEXT, get_string('return_aggregationstatus', 'local_myddleware')),
-                    'aggregationweight' => new external_value(PARAM_FLOAT, get_string('return_aggregationweight', 'local_myddleware'))
+                    'aggregationstatus' => new external_value(
+                        PARAM_TEXT, get_string('return_aggregationstatus', 'local_myddleware')),
+                    'aggregationweight' => new external_value(
+                        PARAM_FLOAT, get_string('return_aggregationweight', 'local_myddleware'))
                 )
             )
         );
