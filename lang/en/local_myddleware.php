@@ -94,3 +94,6 @@ $string['return_information'] = 'Information';
 $string['return_informationformat'] = 'Information format';
 $string['return_aggregationstatus'] = 'Aggregation status';
 $string['return_aggregationweight'] = 'Aggregation weight';
+$string['return_fullname'] = 'Course fullname';
+$string['return_shortname'] = 'Course shortname';
+$string['return_itemname'] = 'Course itemname';

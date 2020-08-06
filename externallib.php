@@ -872,37 +872,45 @@ class local_myddleware_external extends external_api {
         } else {
             $where = ' grd.timemodified > '.$params['time_modified'];
         }
-
+// récupérer la course id dans le table et item name dans table mdl_grade_items et course name aussi
         // Retrieve token list (including linked users firstname/lastname and linked services name).
         $sql = "
                 SELECT
-                    id,
-                    itemid,
-                    userid,
-                    rawgrade,
-                    rawgrademax,
-                    rawgrademin,
-                    rawscaleid,
-                    usermodified,
-                    finalgrade,
-                    hidden,
-                    locked,
-                    locktime,
-                    exported,
-                    overridden,
-                    excluded,
-                    feedback,
-                    feedbackformat,
-                    information,
-                    informationformat,
-                    timecreated,
-                    timemodified,
-                    aggregationstatus,
-                    aggregationweight
+                    grd.id,
+                    grd.itemid,
+                    grd.userid,
+                    grd.rawgrade,
+                    grd.rawgrademax,
+                    grd.rawgrademin,
+                    grd.rawscaleid,
+                    grd.usermodified,
+                    grd.finalgrade,
+                    grd.hidden,
+                    grd.locked,
+                    grd.locktime,
+                    grd.exported,
+                    grd.overridden,
+                    grd.excluded,
+                    grd.feedback,
+                    grd.feedbackformat,
+                    grd.information,
+                    grd.informationformat,
+                    grd.timecreated,
+                    grd.timemodified,
+                    grd.aggregationstatus,
+                    grd.aggregationweight,
+                    itm.courseid,
+                    itm.itemname,
+                    crs.fullname course_fullname,
+                    crs.shortname course_shortname
                 FROM {grade_grades} grd
+                INNER JOIN {grade_items} itm
+                    ON grd.itemid = itm.id
+                LEFT OUTER JOIN {course} crs
+                    ON itm.courseid = crs.id
                 WHERE
                     ".$where."
-                ORDER BY timemodified ASC, id ASC
+                ORDER BY grd.timemodified ASC, grd.id ASC
                     ";
         $rs = $DB->get_recordset_sql($sql);
 
@@ -951,7 +959,11 @@ class local_myddleware_external extends external_api {
                     'aggregationstatus' => new external_value(
                         PARAM_TEXT, get_string('return_aggregationstatus', 'local_myddleware')),
                     'aggregationweight' => new external_value(
-                        PARAM_FLOAT, get_string('return_aggregationweight', 'local_myddleware'))
+                        PARAM_FLOAT, get_string('return_aggregationweight', 'local_myddleware')),
+                    'courseid' => new external_value(PARAM_INT, get_string('return_courseid', 'local_myddleware')),
+                    'itemname' => new external_value(PARAM_TEXT, get_string('return_itemname', 'local_myddleware')),
+                    'course_fullname' => new external_value(PARAM_TEXT, get_string('return_fullname', 'local_myddleware')),
+                    'course_shortname' => new external_value(PARAM_TEXT, get_string('return_shortname', 'local_myddleware'))
                 )
             )
         );
