@@ -549,9 +549,9 @@ class local_myddleware_external extends external_api {
                 if (
 
                         $selectedcompletion->reaggregate > 0
-                    AND (
+                    && (
                             $selectedcompletion->reaggregate < $daterefoverride
-                         OR $daterefoverride == -1
+                         || $daterefoverride == -1
                     )
                 ) {
                     $daterefoverride = $selectedcompletion->reaggregate;
@@ -872,7 +872,7 @@ class local_myddleware_external extends external_api {
         } else {
             $where = ' grd.timemodified > '.$params['time_modified'];
         }
-// récupérer la course id dans le table et item name dans table mdl_grade_items et course name aussi
+
         // Retrieve token list (including linked users firstname/lastname and linked services name).
         $sql = "
                 SELECT
