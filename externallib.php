@@ -46,8 +46,7 @@ class local_myddleware_external extends external_api {
     public static function get_users_completion_parameters() {
         return new external_function_parameters(
             array(
-                'time_modified' => new external_value(
-                                           PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'timemodified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
                 'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
             )
         );
@@ -65,7 +64,7 @@ class local_myddleware_external extends external_api {
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_users_completion_parameters(),
-            array('time_modified' => $timemodified, 'id' => $id)
+            array('timemodified' => $timemodified, 'id' => $id)
         );
 
         // Context validation.
@@ -76,9 +75,9 @@ class local_myddleware_external extends external_api {
 
         // Prepare the query condition.
         if (!empty($id)) {
-            $where = ' cmc.id = '.$params['id'];
+            $where = ' cmc.id = :id';
         } else {
-            $where = ' cmc.timemodified > '.$params['time_modified'];
+            $where = ' cmc.timemodified > :timemodified';
         }
 
         // Retrieve token list (including linked users firstname/lastname and linked services name).
@@ -100,7 +99,12 @@ class local_myddleware_external extends external_api {
                     ".$where."
                 ORDER BY timemodified ASC
                     ";
-        $rs = $DB->get_recordset_sql($sql);
+
+		$queryParams = array(
+							'id' => (!empty($params['id']) ? $params['id'] : ''),
+							'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+						);
+        $rs = $DB->get_recordset_sql($sql, $queryParams);
 
         $completions = array();
         if (!empty($rs)) {
@@ -151,8 +155,7 @@ class local_myddleware_external extends external_api {
     public static function get_users_last_access_parameters() {
         return new external_function_parameters(
             array(
-                'time_modified' => new external_value(
-                                           PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'timemodified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
                 'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
             )
         );
@@ -172,7 +175,7 @@ class local_myddleware_external extends external_api {
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_users_last_access_parameters(),
-            array('time_modified' => $timemodified, 'id' => $id)
+            array('timemodified' => $timemodified, 'id' => $id)
         );
 
         // Context validation.
@@ -182,10 +185,10 @@ class local_myddleware_external extends external_api {
         require_capability('moodle/user:viewdetails', $context);
 
         // Prepare the query condition.
-        if (!empty($id)) {
-            $where = ' la.id = '.$params['id'];
+		if (!empty($id)) {
+            $where = ' la.id = :id';
         } else {
-            $where = ' la.timeaccess > '.$params['time_modified'];
+            $where = ' la.timeaccess > :timemodified';
         }
 
         $sql = "
@@ -198,7 +201,11 @@ class local_myddleware_external extends external_api {
                 WHERE
                     ".$where."
                 ";
-        $rs = $DB->get_recordset_sql($sql);
+		$queryParams = array(
+							'id' => (!empty($params['id']) ? $params['id'] : ''),
+							'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+						);
+        $rs = $DB->get_recordset_sql($sql, $queryParams);
 
         $lastaccess = array();
         if (!empty($rs)) {
@@ -238,8 +245,7 @@ class local_myddleware_external extends external_api {
     public static function get_courses_by_date_parameters() {
         return new external_function_parameters(
             array(
-                'time_modified' => new external_value(
-                                           PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'timemodified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
                 'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
             )
         );
@@ -252,24 +258,28 @@ class local_myddleware_external extends external_api {
      * @return the list of course.
      */
     public static function get_courses_by_date($timemodified, $id) {
-        global $USER, $DB, $CFG;
+        global $DB, $CFG;
         require_once($CFG->dirroot . "/course/externallib.php");
 
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_courses_by_date_parameters(),
-            array('time_modified' => $timemodified, 'id' => $id)
+            array('timemodified' => $timemodified, 'id' => $id)
         );
 
         // Prepare the query condition.
-        if (!empty($id)) {
-            $where = ' id = '.$params['id'];
+		if (!empty($id)) {
+            $where = ' id = :id';
         } else {
-            $where = ' timemodified > '.$params['time_modified'];
+            $where = ' timemodified > :timemodified';
         }
+		$queryParams = array(
+							'id' => (!empty($params['id']) ? $params['id'] : ''),
+							'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+						);
 
         // Select the courses modified after the datime $timemodified. We select them order by timemodified ascending.
-        $selectedcourses = $DB->get_records_select('course', $where, array(), ' timemodified ASC ', 'id');
+        $selectedcourses = $DB->get_records_select('course', $where, $queryParams, ' timemodified ASC ', 'id');
 
         $returnedcourses = array();
         if (!empty($selectedcourses)) {
@@ -289,7 +299,7 @@ class local_myddleware_external extends external_api {
      * @return external_description.
      */
     public static function get_courses_by_date_returns() {
-        global $USER, $DB, $CFG;
+        global $CFG;
         require_once($CFG->dirroot . "/course/externallib.php");
         // We use the same result than the function get_courses.
         return core_course_external::get_courses_returns();
@@ -305,8 +315,7 @@ class local_myddleware_external extends external_api {
     public static function get_users_by_date_parameters() {
         return new external_function_parameters(
             array(
-                'time_modified' => new external_value(
-                                           PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'timemodified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
                 'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
             )
         );
@@ -319,25 +328,29 @@ class local_myddleware_external extends external_api {
      * @return the list of user.
      */
     public static function get_users_by_date($timemodified, $id) {
-        global $USER, $DB, $CFG;
+        global $DB, $CFG;
         require_once($CFG->dirroot . "/user/externallib.php");
 
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_users_by_date_parameters(),
-            array('time_modified' => $timemodified, 'id' => $id)
+            array('timemodified' => $timemodified, 'id' => $id)
         );
 
         // Prepare the query condition.
-        if (!empty($id)) {
-            $where = ' deleted = 0 AND id = '.$params['id'];
+		if (!empty($id)) {
+            $where = ' deleted = 0 AND id = :id';
         } else {
-            $where = ' deleted = 0 AND timemodified > '.$params['time_modified'];
+            $where = ' deleted = 0 AND timemodified > :timemodified';
         }
+		$queryParams = array(
+							'id' => (!empty($params['id']) ? $params['id'] : ''),
+							'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+						);
 
         // Select the users modified after the datime $timemodified.
-        $additionalfields = 'id, timemodified,lastnamephonetic,firstnamephonetic,middlename,alternatename';
-        $selectedusers = $DB->get_records_select('user', $where, array(), ' timemodified ASC ', $additionalfields);
+        $additionalfields = 'id, timemodified, lastnamephonetic, firstnamephonetic, middlename, alternatename';
+        $selectedusers = $DB->get_records_select('user', $where, $queryParams, ' timemodified ASC ', $additionalfields);
         $returnedusers = array();
         if (!empty($selectedusers)) {
             // Call function get_users for each user found.
@@ -362,7 +375,7 @@ class local_myddleware_external extends external_api {
      * @return external_description.
      */
     public static function get_users_by_date_returns() {
-        global $USER, $DB, $CFG;
+        global $CFG;
         require_once($CFG->dirroot . "/user/externallib.php");
         // Add fields not returned by standard function even if exists in the database, table user.
         $timemodified = array(
@@ -411,8 +424,7 @@ class local_myddleware_external extends external_api {
     public static function get_enrolments_by_date_parameters() {
         return new external_function_parameters(
             array(
-                'time_modified' => new external_value(
-                                           PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'timemodified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
                 'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
             )
         );
@@ -422,28 +434,32 @@ class local_myddleware_external extends external_api {
      * This function search the enrolments modified after after the datime $timemodified.
      * @param int $timemodified
      * @param int $id
-     * @return the list of course.
+     * @return the list of user enrolments.
      */
     public static function get_enrolments_by_date($timemodified, $id) {
-        global $USER, $DB, $CFG;
+        global $DB, $CFG;
         require_once($CFG->dirroot . "/course/externallib.php");
 
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_enrolments_by_date_parameters(),
-            array('time_modified' => $timemodified, 'id' => $id)
+            array('timemodified' => $timemodified, 'id' => $id)
         );
 
         // Prepare the query condition.
-        if (!empty($id)) {
-            $where = ' id = '.$params['id'];
+		if (!empty($id)) {
+            $where = ' id = :id';
         } else {
-            $where = ' timemodified > '.$params['time_modified'];
+            $where = ' timemodified > :timemodified ';
         }
+		$queryParams = array(
+							'id' => (!empty($params['id']) ? $params['id'] : ''),
+							'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+						);
 
         $returnenrolments = array();
         // Select enrolment modified after the date in input.
-        $userenrolments = $DB->get_records_select('user_enrolments', $where, array(),  ' timemodified ASC ', '*');
+        $userenrolments = $DB->get_records_select('user_enrolments', $where, $queryParams, ' timemodified ASC ', '*');
         if (!empty($userenrolments)) {
             foreach ($userenrolments as $userenrolment) {
                 $instance = array();
@@ -452,16 +468,16 @@ class local_myddleware_external extends external_api {
                 // Prepare result.
                 if (!empty($instance)) {
                     $userenroldata = [
-                        'id'             => $userenrolment->id,
-                        'userid'         => $userenrolment->userid,
-                        'courseid'         => $instance->courseid,
-                        'roleid'         => $instance->roleid,
-                        'status'         => $userenrolment->status,
-                        'enrol'         => $instance->enrol,
-                        'timestart'     => $userenrolment->timestart,
-                        'timeend'         => $userenrolment->timeend,
-                        'timecreated'    => $userenrolment->timecreated,
-                        'timemodified'     => $userenrolment->timemodified,
+                        'id' => $userenrolment->id,
+                        'userid' => $userenrolment->userid,
+                        'courseid' => $instance->courseid,
+                        'roleid' => $instance->roleid,
+                        'status' => $userenrolment->status,
+                        'enrol' => $instance->enrol,
+                        'timestart' => $userenrolment->timestart,
+                        'timeend' => $userenrolment->timeend,
+                        'timecreated' => $userenrolment->timecreated,
+                        'timemodified' => $userenrolment->timemodified,
                     ];
                     $returnenrolments[] = $userenroldata;
                 }
@@ -503,8 +519,7 @@ class local_myddleware_external extends external_api {
     public static function get_course_completion_by_date_parameters() {
         return new external_function_parameters(
             array(
-                'time_modified' => new external_value(
-                                           PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'timemodified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
                 'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
             )
         );
@@ -517,25 +532,28 @@ class local_myddleware_external extends external_api {
      * @return an array with the detail of each completion (id,userid,completionstate,timemodified,moduletype,instance,courseid).
      */
     public static function get_course_completion_by_date($timemodified, $id) {
-        global $USER, $DB, $CFG;
+        global $DB, $CFG;
         require_once($CFG->dirroot . "/course/externallib.php");
 
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_course_completion_by_date_parameters(),
-            array('time_modified' => $timemodified, 'id' => $id)
+            array('timemodified' => $timemodified, 'id' => $id)
         );
 
         // Prepare the query condition.
-        if (!empty($id)) {
-            $where = ' id = '.$params['id'];
+		if (!empty($id)) {
+            $where = ' id = :id';
         } else {
-            $where = ' timecompleted > '.$params['time_modified']. ' OR reaggregate > 0 ';
+            $where = ' timemodified > :timemodified  OR reaggregate > 0 ';
         }
-
+		$queryParams = array(
+							'id' => (!empty($params['id']) ? $params['id'] : ''),
+							'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+						);
         $returncompletions = array();
         // Select enrolment modified after the date in input.
-        $selectedcompletions = $DB->get_records_select('course_completions', $where, array(),  ' timecompleted ASC ', '*');
+        $selectedcompletions = $DB->get_records_select('course_completions', $where, $queryParams, ' timecompleted ASC ', '*');
         if (!empty($selectedcompletions)) {
             // Date ref management : date ref is usually the timecompleted.
             // But if reaggregate is not empty we have to keep the smaller value of this field.
@@ -546,14 +564,8 @@ class local_myddleware_external extends external_api {
             // Because we have to read the completion after the next cron job runs.
             foreach ($selectedcompletions as $selectedcompletion) {
                 // Keep the smaller value of reaggregateif it exists.
-                if (
-
-                        $selectedcompletion->reaggregate > 0
-                    && (
-                            $selectedcompletion->reaggregate < $daterefoverride
-                         || $daterefoverride == -1
-                    )
-                ) {
+                if ($selectedcompletion->reaggregate > 0 && 
+                   ($selectedcompletion->reaggregate < $daterefoverride || $daterefoverride == -1)) 
                     $daterefoverride = $selectedcompletion->reaggregate;
                 }
             }
@@ -567,12 +579,12 @@ class local_myddleware_external extends external_api {
                 }
                 // Set date_ref_override if there is at least one reaggregate value (-1 second because we use > in Myddleware).
                 $completiondata = [
-                    'id'                 => $selectedcompletion->id,
-                    'userid'             => $selectedcompletion->userid,
-                    'courseid'             => $selectedcompletion->course,
-                    'timeenrolled'         => $selectedcompletion->timeenrolled,
-                    'timestarted'         => $selectedcompletion->timestarted,
-                    'timecompleted'     => $selectedcompletion->timecompleted,
+                    'id' => $selectedcompletion->id,
+                    'userid' => $selectedcompletion->userid,
+                    'courseid' => $selectedcompletion->course,
+                    'timeenrolled' => $selectedcompletion->timeenrolled,
+                    'timestarted' => $selectedcompletion->timestarted,
+                    'timecompleted' => $selectedcompletion->timecompleted,
                     'date_ref_override' => ($daterefoverride != -1 ? $daterefoverride - 1 : 0)
                 ];
                 // Prepare result.
@@ -610,8 +622,7 @@ class local_myddleware_external extends external_api {
     public static function get_user_compentencies_by_date_parameters() {
         return new external_function_parameters(
             array(
-                'time_modified' => new external_value(
-                                           PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'timemodified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
                 'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
             )
         );
@@ -621,14 +632,14 @@ class local_myddleware_external extends external_api {
      * This function search the user competencies created or modified after after the datime $timemodified.
      * @param int $timemodified
      * @param int $id
-     * @return the list of course.
+     * @return the list of user compentencies.
      */
     public static function get_user_compentencies_by_date($timemodified, $id) {
         global $USER, $DB;
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_user_compentencies_by_date_parameters(),
-            array('time_modified' => $timemodified, 'id' => $id)
+            array('timemodified' => $timemodified, 'id' => $id)
         );
 
         // Context validation.
@@ -637,14 +648,18 @@ class local_myddleware_external extends external_api {
         require_capability('moodle/competency:usercompetencyview', $context);
 
         // Prepare the query condition.
-        if (!empty($id)) {
-            $where = ' id = '.$params['id'];
+		if (!empty($id)) {
+            $where = ' id = :id';
         } else {
-            $where = ' timemodified > '.$params['time_modified'];
+            $where = ' timemodified > :timemodified';
         }
+		$queryParams = array(
+							'id' => (!empty($params['id']) ? $params['id'] : ''),
+							'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+						);
 
         // Select the user compencies modified after the datime $timemodified. We select them order by timemodified ascending.
-        $selectedusercompetencies = $DB->get_records_select('competency_usercomp', $where, array(), ' timemodified ASC ');
+        $selectedusercompetencies = $DB->get_records_select('competency_usercomp', $where, $queryParams, ' timemodified ASC ');
 
         // Prepare result.
         $returnedusercompetencies = array();
@@ -652,22 +667,22 @@ class local_myddleware_external extends external_api {
             foreach ($selectedusercompetencies as $selectedusercompetency) {
                 // Add competency header data to the user compentency.
                 $competency = user_competency::get_competency_by_usercompetencyid($selectedusercompetency->id);
-                $selectedusercompetency->competency_shortname                 = $competency->get('shortname');
-                $selectedusercompetency->competency_description             = $competency->get('description');
-                $selectedusercompetency->competency_descriptionformat         = $competency->get('descriptionformat');
-                $selectedusercompetency->competency_idnumber                 = $competency->get('idnumber');
-                $selectedusercompetency->competency_competencyframeworkid     = $competency->get('competencyframeworkid');
-                $selectedusercompetency->competency_parentid                 = $competency->get('parentid');
-                $selectedusercompetency->competency_path                     = $competency->get('path');
-                $selectedusercompetency->competency_sortorder                 = $competency->get('sortorder');
-                $selectedusercompetency->competency_ruletype                 = $competency->get('ruletype');
-                $selectedusercompetency->competency_ruleoutcome             = $competency->get('ruleoutcome');
-                $selectedusercompetency->competency_ruleconfig                 = $competency->get('ruleconfig');
-                $selectedusercompetency->competency_scaleid                 = $competency->get('scaleid');
-                $selectedusercompetency->competency_scaleconfiguration         = $competency->get('scaleconfiguration');
-                $selectedusercompetency->competency_timecreated             = $competency->get('timecreated');
-                $selectedusercompetency->competency_timemodified             = $competency->get('timemodified');
-                $selectedusercompetency->competency_usermodified            = $competency->get('usermodified');
+                $selectedusercompetency->competency_shortname = $competency->get('shortname');
+                $selectedusercompetency->competency_description = $competency->get('description');
+                $selectedusercompetency->competency_descriptionformat = $competency->get('descriptionformat');
+                $selectedusercompetency->competency_idnumber = $competency->get('idnumber');
+                $selectedusercompetency->competency_competencyframeworkid = $competency->get('competencyframeworkid');
+                $selectedusercompetency->competency_parentid = $competency->get('parentid');
+                $selectedusercompetency->competency_path = $competency->get('path');
+                $selectedusercompetency->competency_sortorder = $competency->get('sortorder');
+                $selectedusercompetency->competency_ruletype = $competency->get('ruletype');
+                $selectedusercompetency->competency_ruleoutcome = $competency->get('ruleoutcome');
+                $selectedusercompetency->competency_ruleconfig = $competency->get('ruleconfig');
+                $selectedusercompetency->competency_scaleid = $competency->get('scaleid');
+                $selectedusercompetency->competency_scaleconfiguration = $competency->get('scaleconfiguration');
+                $selectedusercompetency->competency_timecreated = $competency->get('timecreated');
+                $selectedusercompetency->competency_timemodified = $competency->get('timemodified');
+                $selectedusercompetency->competency_usermodified = $competency->get('usermodified');
                 $returnedusercompetencies[] = $selectedusercompetency;
             }
         }
@@ -693,38 +708,22 @@ class local_myddleware_external extends external_api {
                     'timecreated' => new external_value(PARAM_INT, get_string('return_timecreated', 'local_myddleware')),
                     'timemodified' => new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware')),
                     'usermodified' => new external_value(PARAM_INT, get_string('return_usermodified', 'local_myddleware')),
-                    'competency_shortname' => new external_value(
-                        PARAM_TEXT, get_string('return_competency_shortname', 'local_myddleware')),
-                    'competency_description' => new external_value(
-                        PARAM_TEXT, get_string('return_competency_description', 'local_myddleware')),
-                    'competency_descriptionformat' => new external_value(
-                        PARAM_INT, get_string('return_competency_descriptionformat', 'local_myddleware')),
-                    'competency_idnumber' => new external_value(
-                        PARAM_TEXT, get_string('return_competency_idnumber', 'local_myddleware')),
-                    'competency_competencyframeworkid' => new external_value(
-                        PARAM_INT, get_string('return_competency_competencyframeworkid', 'local_myddleware')),
-                    'competency_parentid' => new external_value(
-                        PARAM_INT, get_string('return_competency_parentid', 'local_myddleware')),
-                    'competency_path' => new external_value(
-                        PARAM_TEXT, get_string('return_competency_path', 'local_myddleware')),
-                    'competency_sortorder' => new external_value(
-                        PARAM_INT, get_string('return_competency_sortorder', 'local_myddleware')),
-                    'competency_ruletype' => new external_value(
-                        PARAM_TEXT, get_string('return_competency_ruletype', 'local_myddleware')),
-                    'competency_ruleoutcome' => new external_value(
-                        PARAM_INT, get_string('return_competency_ruleoutcome', 'local_myddleware')),
-                    'competency_ruleconfig' => new external_value(
-                        PARAM_TEXT, get_string('return_competency_ruleconfig', 'local_myddleware')),
-                    'competency_scaleid' => new external_value(
-                        PARAM_INT, get_string('return_competency_scaleid', 'local_myddleware')),
-                    'competency_scaleconfiguration' => new external_value(
-                        PARAM_TEXT, get_string('return_competency_scaleconfiguration', 'local_myddleware')),
-                    'competency_timecreated' => new external_value(
-                        PARAM_INT, get_string('return_competency_timecreated', 'local_myddleware')),
-                    'competency_timemodified' => new external_value(
-                        PARAM_INT, get_string('return_competency_timemodified', 'local_myddleware')),
-                    'competency_usermodified' => new external_value(
-                        PARAM_INT, get_string('return_competency_usermodified', 'local_myddleware'))
+                    'competency_shortname' => new external_value(PARAM_TEXT, get_string('return_competency_shortname', 'local_myddleware')),
+                    'competency_description' => new external_value(PARAM_TEXT, get_string('return_competency_description', 'local_myddleware')),
+                    'competency_descriptionformat' => new external_value(PARAM_INT, get_string('return_competency_descriptionformat', 'local_myddleware')),
+                    'competency_idnumber' => new external_value(PARAM_TEXT, get_string('return_competency_idnumber', 'local_myddleware')),
+                    'competency_competencyframeworkid' => new external_value(PARAM_INT, get_string('return_competency_competencyframeworkid', 'local_myddleware')),
+                    'competency_parentid' => new external_value(PARAM_INT, get_string('return_competency_parentid', 'local_myddleware')),
+                    'competency_path' => new external_value(PARAM_TEXT, get_string('return_competency_path', 'local_myddleware')),
+                    'competency_sortorder' => new external_value(PARAM_INT, get_string('return_competency_sortorder', 'local_myddleware')),
+                    'competency_ruletype' => new external_value(PARAM_TEXT, get_string('return_competency_ruletype', 'local_myddleware')),
+                    'competency_ruleoutcome' => new external_value(PARAM_INT, get_string('return_competency_ruleoutcome', 'local_myddleware')),
+                    'competency_ruleconfig' => new external_value(PARAM_TEXT, get_string('return_competency_ruleconfig', 'local_myddleware')),
+                    'competency_scaleid' => new external_value(PARAM_INT, get_string('return_competency_scaleid', 'local_myddleware')),
+                    'competency_scaleconfiguration' => new external_value(PARAM_TEXT, get_string('return_competency_scaleconfiguration', 'local_myddleware')),
+                    'competency_timecreated' => new external_value(PARAM_INT, get_string('return_competency_timecreated', 'local_myddleware')),
+                    'competency_timemodified' => new external_value(PARAM_INT, get_string('return_competency_timemodified', 'local_myddleware')),
+                    'competency_usermodified' => new external_value(PARAM_INT, get_string('return_competency_usermodified', 'local_myddleware'))
                 )
             )
         );
@@ -737,8 +736,7 @@ class local_myddleware_external extends external_api {
     public static function get_competency_module_completion_by_date_parameters() {
         return new external_function_parameters(
             array(
-                'time_modified' => new external_value(
-                                           PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'timemodified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
                 'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
             )
         );
@@ -748,14 +746,14 @@ class local_myddleware_external extends external_api {
      * This function search the user competencies created or modified after after the datime $timemodified.
      * @param int $timemodified
      * @param int $id
-     * @return the list of course.
+     * @return the list of competency module completions
      */
     public static function get_competency_module_completion_by_date($timemodified, $id) {
         global $USER, $DB;
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_user_compentencies_by_date_parameters(),
-            array('time_modified' => $timemodified, 'id' => $id)
+            array('timemodified' => $timemodified, 'id' => $id)
         );
 
         // Context validation.
@@ -764,33 +762,38 @@ class local_myddleware_external extends external_api {
         require_capability('moodle/competency:usercompetencyview', $context);
 
         // Prepare the query condition.
-        if (!empty($id)) {
-            $where = ' id = '.$params['id'];
+		if (!empty($id)) {
+            $where = ' id = :id';
         } else {
-            $where = ' timemodified > '.$params['time_modified'];
+            $where = ' timemodified > :timemodified';
         }
-
+		$queryParams = array(
+							'id' => (!empty($params['id']) ? $params['id'] : ''),
+							'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+						);
+						
         // Select the user compencies modified after the datime $timemodified. We select them order by timemodified ascending.
-        $selectedcompetencymodulecompletions = $DB->get_records_select(
-                                                         'competency_modulecomp', $where, array(), ' timemodified ASC ');
+        $selectedcompetencymodulecompletions = $DB->get_records_select('competency_modulecomp', $where, $queryParams, ' timemodified ASC ');
 
         // Prepare result.
         $returnedcompetencymodulecompletion = array();
         if (!empty($selectedcompetencymodulecompletions)) {
             foreach ($selectedcompetencymodulecompletions as $selectedcompetencymodulecompletion) {
                 $competencymodulecompletion = [
-                    'id'           => $selectedcompetencymodulecompletion->id,
-                    'cmid'         => $selectedcompetencymodulecompletion->cmid,
-                    'timecreated'  => $selectedcompetencymodulecompletion->timecreated,
+                    'id' => $selectedcompetencymodulecompletion->id,
+                    'cmid' => $selectedcompetencymodulecompletion->cmid,
+                    'timecreated' => $selectedcompetencymodulecompletion->timecreated,
                     'timemodified' => $selectedcompetencymodulecompletion->timemodified,
                     'usermodified' => $selectedcompetencymodulecompletion->usermodified,
-                    'sortorder'    => $selectedcompetencymodulecompletion->sortorder,
+                    'sortorder' => $selectedcompetencymodulecompletion->sortorder,
                     'competencyid' => $selectedcompetencymodulecompletion->competencyid,
-                    'ruleoutcome'  => $selectedcompetencymodulecompletion->ruleoutcome
+                    'ruleoutcome' => $selectedcompetencymodulecompletion->ruleoutcome
                 ];
+				
+				$queryParams = array('id' => $selectedcompetencymodulecompletion->cmid);
+				
                 // Get the course id.
-                $selectedcoursemodule = $DB->get_records_select(
-                                                 'course_modules', 'id = '.$selectedcompetencymodulecompletion->cmid, array(), '');
+                $selectedcoursemodule = $DB->get_records_select('course_modules', 'id = :id', $queryParams, '');
                 $competencymodulecompletion['courseid'] = current($selectedcoursemodule)->course;
                 if (!empty($competencymodulecompletion['courseid'])) {
                     // Add information about the module.
@@ -838,8 +841,7 @@ class local_myddleware_external extends external_api {
     public static function get_user_grades_parameters() {
         return new external_function_parameters(
             array(
-                'time_modified' => new external_value(
-                                           PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'timemodified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
                 'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
             )
         );
@@ -849,7 +851,7 @@ class local_myddleware_external extends external_api {
      * This function search completion created after the date $timemodified in parameters.
      * @param int $timemodified
      * @param int $id
-     * @return an array with the detail of each completion (id,userid,completionstate,timemodified,moduletype,instance,courseid).
+     * @return an array with the detail of each grades.
      */
     public static function get_user_grades($timemodified, $id) {
         global $USER, $DB;
@@ -857,7 +859,7 @@ class local_myddleware_external extends external_api {
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_users_completion_parameters(),
-            array('time_modified' => $timemodified, 'id' => $id)
+            array('timemodified' => $timemodified, 'id' => $id)
         );
 
         // Context validation.
@@ -867,12 +869,16 @@ class local_myddleware_external extends external_api {
         require_capability('moodle/user:viewdetails', $context);
 
         // Prepare the query condition.
-        if (!empty($id)) {
-            $where = ' grd.id = '.$params['id'];
+		if (!empty($id)) {
+            $where = ' grd.id = :id';
         } else {
-            $where = ' grd.timemodified > '.$params['time_modified'];
+            $where = ' grd.timemodified > :timemodified';
         }
-
+		$queryParams = array(
+							'id' => (!empty($params['id']) ? $params['id'] : ''),
+							'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+						);
+						
         // Retrieve token list (including linked users firstname/lastname and linked services name).
         $sql = "
                 SELECT
@@ -912,7 +918,7 @@ class local_myddleware_external extends external_api {
                     ".$where."
                 ORDER BY grd.timemodified ASC, grd.id ASC
                     ";
-        $rs = $DB->get_recordset_sql($sql);
+        $rs = $DB->get_recordset_sql($sql, $queryParams);
 
         $grades = array();
         if (!empty($rs)) {
@@ -952,14 +958,11 @@ class local_myddleware_external extends external_api {
                     'feedback' => new external_value(PARAM_TEXT, get_string('return_feedback', 'local_myddleware')),
                     'feedbackformat' => new external_value(PARAM_INT, get_string('return_feedbackformat', 'local_myddleware')),
                     'information' => new external_value(PARAM_TEXT, get_string('return_information', 'local_myddleware')),
-                    'informationformat' => new external_value(
-                        PARAM_INT, get_string('return_informationformat', 'local_myddleware')),
+                    'informationformat' => new external_value(PARAM_INT, get_string('return_informationformat', 'local_myddleware')),
                     'timecreated' => new external_value(PARAM_INT, get_string('return_timecreated', 'local_myddleware')),
                     'timemodified' => new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware')),
-                    'aggregationstatus' => new external_value(
-                        PARAM_TEXT, get_string('return_aggregationstatus', 'local_myddleware')),
-                    'aggregationweight' => new external_value(
-                        PARAM_FLOAT, get_string('return_aggregationweight', 'local_myddleware')),
+                    'aggregationstatus' => new external_value(PARAM_TEXT, get_string('return_aggregationstatus', 'local_myddleware')),
+                    'aggregationweight' => new external_value(PARAM_FLOAT, get_string('return_aggregationweight', 'local_myddleware')),
                     'courseid' => new external_value(PARAM_INT, get_string('return_courseid', 'local_myddleware')),
                     'itemname' => new external_value(PARAM_TEXT, get_string('return_itemname', 'local_myddleware')),
                     'course_fullname' => new external_value(PARAM_TEXT, get_string('return_fullname', 'local_myddleware')),
