@@ -46,8 +46,9 @@ class local_myddleware_external extends external_api {
     public static function get_users_completion_parameters() {
         return new external_function_parameters(
             array(
-                'timemodified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
-                'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
+                'timemodified' => new external_value(
+                    PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
             )
         );
     }
@@ -155,8 +156,9 @@ class local_myddleware_external extends external_api {
     public static function get_users_last_access_parameters() {
         return new external_function_parameters(
             array(
-                'timemodified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
-                'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
+                'timemodified' => new external_value(
+                    PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
             )
         );
     }
@@ -245,8 +247,9 @@ class local_myddleware_external extends external_api {
     public static function get_courses_by_date_parameters() {
         return new external_function_parameters(
             array(
-                'timemodified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
-                'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
+                'timemodified' => new external_value(
+                    PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
             )
         );
     }
@@ -315,8 +318,9 @@ class local_myddleware_external extends external_api {
     public static function get_users_by_date_parameters() {
         return new external_function_parameters(
             array(
-                'timemodified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
-                'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
+                'timemodified' => new external_value(
+                    PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
             )
         );
     }
@@ -424,8 +428,9 @@ class local_myddleware_external extends external_api {
     public static function get_enrolments_by_date_parameters() {
         return new external_function_parameters(
             array(
-                'timemodified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
-                'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
+                'timemodified' => new external_value(
+                    PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
             )
         );
     }
@@ -519,8 +524,9 @@ class local_myddleware_external extends external_api {
     public static function get_course_completion_by_date_parameters() {
         return new external_function_parameters(
             array(
-                'timemodified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
-                'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
+                'timemodified' => new external_value(
+                    PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
             )
         );
     }
@@ -622,8 +628,9 @@ class local_myddleware_external extends external_api {
     public static function get_user_compentencies_by_date_parameters() {
         return new external_function_parameters(
             array(
-                'timemodified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
-                'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
+                'timemodified' => new external_value(
+                    PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
             )
         );
     }
@@ -708,22 +715,38 @@ class local_myddleware_external extends external_api {
                     'timecreated' => new external_value(PARAM_INT, get_string('return_timecreated', 'local_myddleware')),
                     'timemodified' => new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware')),
                     'usermodified' => new external_value(PARAM_INT, get_string('return_usermodified', 'local_myddleware')),
-                    'competency_shortname' => new external_value(PARAM_TEXT, get_string('return_competency_shortname', 'local_myddleware')),
-                    'competency_description' => new external_value(PARAM_TEXT, get_string('return_competency_description', 'local_myddleware')),
-                    'competency_descriptionformat' => new external_value(PARAM_INT, get_string('return_competency_descriptionformat', 'local_myddleware')),
-                    'competency_idnumber' => new external_value(PARAM_TEXT, get_string('return_competency_idnumber', 'local_myddleware')),
-                    'competency_competencyframeworkid' => new external_value(PARAM_INT, get_string('return_competency_competencyframeworkid', 'local_myddleware')),
-                    'competency_parentid' => new external_value(PARAM_INT, get_string('return_competency_parentid', 'local_myddleware')),
-                    'competency_path' => new external_value(PARAM_TEXT, get_string('return_competency_path', 'local_myddleware')),
-                    'competency_sortorder' => new external_value(PARAM_INT, get_string('return_competency_sortorder', 'local_myddleware')),
-                    'competency_ruletype' => new external_value(PARAM_TEXT, get_string('return_competency_ruletype', 'local_myddleware')),
-                    'competency_ruleoutcome' => new external_value(PARAM_INT, get_string('return_competency_ruleoutcome', 'local_myddleware')),
-                    'competency_ruleconfig' => new external_value(PARAM_TEXT, get_string('return_competency_ruleconfig', 'local_myddleware')),
-                    'competency_scaleid' => new external_value(PARAM_INT, get_string('return_competency_scaleid', 'local_myddleware')),
-                    'competency_scaleconfiguration' => new external_value(PARAM_TEXT, get_string('return_competency_scaleconfiguration', 'local_myddleware')),
-                    'competency_timecreated' => new external_value(PARAM_INT, get_string('return_competency_timecreated', 'local_myddleware')),
-                    'competency_timemodified' => new external_value(PARAM_INT, get_string('return_competency_timemodified', 'local_myddleware')),
-                    'competency_usermodified' => new external_value(PARAM_INT, get_string('return_competency_usermodified', 'local_myddleware'))
+                    'competency_shortname' => new external_value(
+                        PARAM_TEXT, get_string('return_competency_shortname', 'local_myddleware')),
+                    'competency_description' => new external_value(
+                        PARAM_TEXT, get_string('return_competency_description', 'local_myddleware')),
+                    'competency_descriptionformat' => new external_value(
+                        PARAM_INT, get_string('return_competency_descriptionformat', 'local_myddleware')),
+                    'competency_idnumber' => new external_value(
+                        PARAM_TEXT, get_string('return_competency_idnumber', 'local_myddleware')),
+                    'competency_competencyframeworkid' => new external_value(
+                        PARAM_INT, get_string('return_competency_competencyframeworkid', 'local_myddleware')),
+                    'competency_parentid' => new external_value(
+                        PARAM_INT, get_string('return_competency_parentid', 'local_myddleware')),
+                    'competency_path' => new external_value(
+                        PARAM_TEXT, get_string('return_competency_path', 'local_myddleware')),
+                    'competency_sortorder' => new external_value(
+                        PARAM_INT, get_string('return_competency_sortorder', 'local_myddleware')),
+                    'competency_ruletype' => new external_value(
+                        PARAM_TEXT, get_string('return_competency_ruletype', 'local_myddleware')),
+                    'competency_ruleoutcome' => new external_value(
+                        PARAM_INT, get_string('return_competency_ruleoutcome', 'local_myddleware')),
+                    'competency_ruleconfig' => new external_value(
+                        PARAM_TEXT, get_string('return_competency_ruleconfig', 'local_myddleware')),
+                    'competency_scaleid' => new external_value(
+                        PARAM_INT, get_string('return_competency_scaleid', 'local_myddleware')),
+                    'competency_scaleconfiguration' => new external_value(
+                        PARAM_TEXT, get_string('return_competency_scaleconfiguration', 'local_myddleware')),
+                    'competency_timecreated' => new external_value(
+                        PARAM_INT, get_string('return_competency_timecreated', 'local_myddleware')),
+                    'competency_timemodified' => new external_value(
+                        PARAM_INT, get_string('return_competency_timemodified', 'local_myddleware')),
+                    'competency_usermodified' => new external_value(
+                        PARAM_INT, get_string('return_competency_usermodified', 'local_myddleware'))
                 )
             )
         );
@@ -736,8 +759,9 @@ class local_myddleware_external extends external_api {
     public static function get_competency_module_completion_by_date_parameters() {
         return new external_function_parameters(
             array(
-                'timemodified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
-                'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
+                'timemodified' => new external_value(
+                    PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
             )
         );
     }
@@ -842,7 +866,7 @@ class local_myddleware_external extends external_api {
         return new external_function_parameters(
             array(
                 'timemodified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
-                'id' => new external_value(PARAM_INT, get_string('param_id'), VALUE_DEFAULT, 0),
+                'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
             )
         );
     }
@@ -958,11 +982,14 @@ class local_myddleware_external extends external_api {
                     'feedback' => new external_value(PARAM_TEXT, get_string('return_feedback', 'local_myddleware')),
                     'feedbackformat' => new external_value(PARAM_INT, get_string('return_feedbackformat', 'local_myddleware')),
                     'information' => new external_value(PARAM_TEXT, get_string('return_information', 'local_myddleware')),
-                    'informationformat' => new external_value(PARAM_INT, get_string('return_informationformat', 'local_myddleware')),
+                    'informationformat' => new external_value(
+                        PARAM_INT, get_string('return_informationformat', 'local_myddleware')),
                     'timecreated' => new external_value(PARAM_INT, get_string('return_timecreated', 'local_myddleware')),
                     'timemodified' => new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware')),
-                    'aggregationstatus' => new external_value(PARAM_TEXT, get_string('return_aggregationstatus', 'local_myddleware')),
-                    'aggregationweight' => new external_value(PARAM_FLOAT, get_string('return_aggregationweight', 'local_myddleware')),
+                    'aggregationstatus' => new external_value(
+                        PARAM_TEXT, get_string('return_aggregationstatus', 'local_myddleware')),
+                    'aggregationweight' => new external_value(
+                        PARAM_FLOAT, get_string('return_aggregationweight', 'local_myddleware')),
                     'courseid' => new external_value(PARAM_INT, get_string('return_courseid', 'local_myddleware')),
                     'itemname' => new external_value(PARAM_TEXT, get_string('return_itemname', 'local_myddleware')),
                     'course_fullname' => new external_value(PARAM_TEXT, get_string('return_fullname', 'local_myddleware')),
