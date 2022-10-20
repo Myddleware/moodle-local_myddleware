@@ -20,14 +20,13 @@ Here is the list of available modules in source (reading) and target (writing) :
 | User competencies | :heavy_check_mark: |  |
 | User grades | :heavy_check_mark: |  |
 
-Need more functionalities ? Please <a href="http://www.myddleware.com/contact-us" target="_blank">Contact us</a>
+Need more functionalities ? Please [Contact us](http://www.myddleware.com/contact-us)
 
-Please, install first the <a href="https://moodle.org/plugins/local_myddleware" target="_blank">Myddleware Moodle plugin</a>
+Please, install first the [Myddleware Moodle plugin](https://moodle.org/plugins/local_myddleware)
 
-Generate your token by following this tutorial : <a href="https://docs.moodle.org/400/en/Using_web_services" target="_blank">docs moodle</a>
+Generate your token by following this tutorial : [documentation moodle](https://docs.moodle.org/400/en/Using_web_services)
 
-You can use this system role and assigned it to the user linked to your token. Click on this link to download it, then unzip it before importing it in Moodle : <a href="http://community.myddleware.com/wp-content/uploads/2016/11/myddleware_moodle_role_1.3-1.zip" target="_blank">here</a>
-
+You can use this system role and assigned it to the user linked to your token. Click on this link to download it, then unzip it before importing it in Moodle :  <a href="http://community.myddleware.com/wp-content/uploads/2016/11/myddleware_moodle_role_1.3-1.zip" download>here</a>
 
 To assigned a role, go to Site administration -> Users -> Assign system roles
 
@@ -53,7 +52,7 @@ Please add these functions to your external services :
 
 In the blue box are the standard functions. In the red box are the custom functions used by Myddleware to read data from Moodle. The custom functions have a name beginning by local_myddleware (there is more functions than on the screenshot). 
 
-> Make sure you have installed the Myddleware Moodle plugin if you don’t find these functions in the list. <a href="https://moodle.org/plugins/local_myddleware" target="_blank">here</a>
+> Make sure you have installed the Myddleware Moodle plugin if you don’t find these functions in the list. [here](https://moodle.org/plugins/local_myddleware)
 
 ### Creation of a connector 
 
@@ -71,13 +70,13 @@ Myddleware is the customisable free open-source platform that facilitates data m
 
 ![myddleware-interface](https://user-images.githubusercontent.com/95077335/196908998-5fafb2e0-5c5e-4771-a398-e9471ea775cb.png)
 
-<a href="https://myddleware.github.io/myddleware/" target="_blank">On our documentation website</a>, you’ll find everything you’re looking for to master Myddleware, including step-by-step tutorials. You can also tailor Myddleware to your needs by creating you custom code. Please use <a href="https://github.com/Myddleware" target="_blank">our github</a> to share it.
+[On our documentation website](https://myddleware.github.io/myddleware/), you’ll find everything you’re looking for to master Myddleware, including step-by-step tutorials. You can also tailor Myddleware to your needs by creating you custom code. Please use <a href="https://github.com/Myddleware" target="_blank">our github</a> to share it.
 
 This community is ours : let’s all contribute, make it a friendly, helpful space where we can all find what we’re looking for!
 
 Please don’t hide any precious skills from us, whether it is coding, translation, connectors creation, .... the list goes on! The whole community could then benefit from these!
 
-Find us here : <a href="http://www.myddleware.com" target="_blank">Myddleware</a>
+Find us here : [Myddleware](http://www.myddleware.com)
 
 *We created it, you own it!*
 
