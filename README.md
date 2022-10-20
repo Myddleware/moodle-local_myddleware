@@ -5,20 +5,20 @@
 Here is the list of available modules in source (reading) and target (writing) :
 
 | Module | Source | Target |
-| --- | --- |
-| Courses | :heavy_check-mark: | :heavy_check-mark: |
-| Users | :heavy_check-mark: | :heavy_check-mark: |
-| Group members |  | :heavy_check-mark: |
-| Groups |  | :heavy_check-mark: |
-| Enrollment | :heavy_check-mark: | :heavy_check-mark: |
-| Unenrollment |  | :heavy_check-mark: |
-| Notes |  | :heavy_check-mark: |
-| Courses completion | :heavy_check-mark: |  |
-| Activities completion | :heavy_check-mark: |  |
-| Courses last access | :heavy_check-mark: |  |
-| Competencies module completion | :heavy_check-mark: |  |
-| User competencies | :heavy_check-mark: |  |
-| User grades | :heavy_check-mark: |  |
+| --- | --- | --- |
+| Courses | :heavy_check_mark: | :heavy_check_mark: |
+| Users | :heavy_check_mark: | :heavy_check_mark: |
+| Group members |  | :heavy_check_mark: |
+| Groups |  | :heavy_check_mark: |
+| Enrollment | :heavy_check_mark: | :heavy_check_mark: |
+| Unenrollment |  | :heavy_check_mark: |
+| Notes |  | :heavy_check_mark: |
+| Courses completion | :heavy_check_mark: |  |
+| Activities completion | :heavy_check_mark: |  |
+| Courses last access | :heavy_check_mark: |  |
+| Competencies module completion | :heavy_check_mark: |  |
+| User competencies | :heavy_check_mark: |  |
+| User grades | :heavy_check_mark: |  |
 
 Need more functionalities ? Please [Contact us](http://www.myddleware.com/contact-us)
 
@@ -58,6 +58,7 @@ In the blue box are the standard functions. In the red box are the custom functi
 
 Add the URL of your Moodle instance and your token in Myddleware 
 
+![image](https://user-images.githubusercontent.com/95077335/196911939-3d02252a-2a64-4b03-b4de-f96343e09abd.png)
 
 *Congratulations, you‘ve created your Moodle connector ! You can now use it to synchronise data to and from this solution.*
 
@@ -67,16 +68,16 @@ Add the URL of your Moodle instance and your token in Myddleware
 
 Myddleware is the customisable free open-source platform that facilitates data migration and synchonisation between applications.
 
-<img class="alignnone size-large wp-image-447" src="http://community.myddleware.com/wp-content/uploads/2016/11/create_rule_view-1024x596.png" alt="create_rule_view" width="640" height="373" />
+![myddleware-interface](https://user-images.githubusercontent.com/95077335/196908998-5fafb2e0-5c5e-4771-a398-e9471ea775cb.png)
 
-<a href="http://community.myddleware.com/" target="_blank">On our community website,</a> you�ll find everything you�re looking for to master Myddleware, from step-by-step tutorials, to English and French forums. You can also tailor Myddleware to your needs by creating you custom code. Please use <a href="https://github.com/Myddleware" target="_blank">our github</a> to share it.
+[On our documentation website](https://myddleware.github.io/myddleware/), you’ll find everything you’re looking for to master Myddleware, including step-by-step tutorials. You can also tailor Myddleware to your needs by creating you custom code. Please use <a href="https://github.com/Myddleware" target="_blank">our github</a> to share it.
 
-This community is ours : let�s all contribute, make it a friendly, helpful space where we can all find what we�re looking for!
+This community is ours : let’s all contribute, make it a friendly, helpful space where we can all find what we’re looking for!
 
-Please don�t hide any precious skills from us, whether it is coding, translation, connectors creation, .... the list goes on! The whole community could then benefit from these!
+Please don’t hide any precious skills from us, whether it is coding, translation, connectors creation, .... the list goes on! The whole community could then benefit from these!
 
-Find us here : <a href="http://www.myddleware.com">www.myddleware.com</a>
+Find us here : [Myddleware](http://www.myddleware.com">www.myddleware.com)
 
 *We created it, you own it!*
 
-<img class="alignnone size-medium wp-image-161" src="http://community.myddleware.com/wp-content/uploads/2016/09/myddleware_logo-300x215.jpg" alt="myddleware_logo" width="300" height="215" />
+![logo](https://user-images.githubusercontent.com/95077335/196912472-29ad70f3-e87e-4218-82b5-16480695b30b.png)
