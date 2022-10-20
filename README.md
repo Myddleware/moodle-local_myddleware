@@ -26,7 +26,8 @@ Please, install first the [Myddleware Moodle plugin](https://moodle.org/plugins/
 
 Generate your token by following this tutorial : [documentation moodle](https://docs.moodle.org/400/en/Using_web_services)
 
-You can use this system role and assigned it to the user linked to your token. Click on this link to download it, then unzip it before importing it in Moodle :  <a href="http://community.myddleware.com/wp-content/uploads/2016/11/myddleware_moodle_role_1.3-1.zip" download>here</a>
+You can use this system role and assigned it to the user linked to your token. Click on this link to download it, then unzip it before importing it in Moodle :
+[myddleware_moodle_role](https://github.com/Myddleware/moodle-local_myddleware/files/9828988/myddleware_moodle_role_1.3-1.4.zip)
 
 To assigned a role, go to Site administration -> Users -> Assign system roles
 
