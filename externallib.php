@@ -787,47 +787,49 @@ class local_myddleware_external extends external_api {
 
         // Prepare the query condition.
 		if (!empty($id)) {
-            $where = ' id = :id';
+            $where = ' competency_modulecomp.id = :id';
         } else {
-            $where = ' timemodified > :timemodified';
+            $where = ' competency_modulecomp.timemodified > :timemodified';
         }
 		$queryParams = array(
 							'id' => (!empty($params['id']) ? $params['id'] : ''),
 							'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
 						);
-						
-        // Select the user compencies modified after the datime $timemodified. We select them order by timemodified ascending.
-        $selectedcompetencymodulecompletions = $DB->get_records_select('competency_modulecomp', $where, $queryParams, ' timemodified ASC ');
 
-        // Prepare result.
-        $returnedcompetencymodulecompletion = array();
-        if (!empty($selectedcompetencymodulecompletions)) {
-            foreach ($selectedcompetencymodulecompletions as $selectedcompetencymodulecompletion) {
-                $competencymodulecompletion = [
-                    'id' => $selectedcompetencymodulecompletion->id,
-                    'cmid' => $selectedcompetencymodulecompletion->cmid,
-                    'timecreated' => $selectedcompetencymodulecompletion->timecreated,
-                    'timemodified' => $selectedcompetencymodulecompletion->timemodified,
-                    'usermodified' => $selectedcompetencymodulecompletion->usermodified,
-                    'sortorder' => $selectedcompetencymodulecompletion->sortorder,
-                    'competencyid' => $selectedcompetencymodulecompletion->competencyid,
-                    'ruleoutcome' => $selectedcompetencymodulecompletion->ruleoutcome
-                ];
-				
-				$queryParams = array('id' => $selectedcompetencymodulecompletion->cmid);
-				
-                // Get the course id.
-                $selectedcoursemodule = $DB->get_records_select('course_modules', 'id = :id', $queryParams, '');
-                $competencymodulecompletion['courseid'] = current($selectedcoursemodule)->course;
-                if (!empty($competencymodulecompletion['courseid'])) {
-                    // Add information about the module.
-                    $modinfo = get_fast_modinfo($competencymodulecompletion['courseid']);
-                    $cm = $modinfo->get_cm($selectedcompetencymodulecompletion->cmid);
-                    $competencymodulecompletion['modulename'] = $cm->modname;
-                    $competencymodulecompletion['coursemodulename'] = $cm->name;
+        $sql = "
+            SELECT 
+                competency_modulecomp.id,
+                competency_modulecomp.cmid,
+                competency_modulecomp.timecreated,
+                competency_modulecomp.timemodified,
+                competency_modulecomp.usermodified,
+                competency_modulecomp.sortorder,
+                competency_modulecomp.competencyid,
+                competency_modulecomp.ruleoutcome,
+                course.id,
+                modules.name as modulename,
+                course.fullname as coursemodulename
+            FROM {competency_modulecomp} competency_modulecomp
+                LEFT OUTER JOIN {course_modules} course_modules
+                    ON competency_modulecomp.cmid = course_modules.id
+                    LEFT OUTER JOIN{modules} modules
+                        ON course_modules.module = modules.id
+                    LEFT OUTER JOIN {course} course
+                        ON course_modules.course = course.id
+            WHERE
+                ".$where."
+            ";
+        
+        // Select the user compencies modified after the datime $timemodified. We select them order by timemodified ascending.
+        $rs = $DB->get_recordset_sql($sql, $queryParams);
+       
+        $competencymodulecompletions = array();
+        if (!empty($rs)) {
+            foreach ($rs as $competencymodulecompletionrecords) {
+                foreach ($competencymodulecompletionrecords as $key => $value) {
+                    $competencymodulecompletion[$key] = $value;
                 }
-                // Prepare result.
-                $returnedcompetencymodulecompletion[] = $competencymodulecompletion;
+                $competencymodulecompletions[] = $grade;
             }
         }
         return $returnedcompetencymodulecompletion;
