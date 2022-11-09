@@ -868,7 +868,8 @@ class local_myddleware_external extends external_api {
     public static function get_user_grades_parameters() {
         return new external_function_parameters(
             array(
-                'time_modified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'time_modified' => new external_value(
+                    PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
                 'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
             )
         );

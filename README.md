@@ -6,19 +6,19 @@ Here is the list of available modules in source (reading) and target (writing) :
 
 | Module | Source | Target |
 | --- | --- | --- |
-| Courses | :heavy_check_mark: | :heavy_check_mark: |
-| Users | :heavy_check_mark: | :heavy_check_mark: |
-| Group members |  | :heavy_check_mark: |
-| Groups |  | :heavy_check_mark: |
-| Enrollment | :heavy_check_mark: | :heavy_check_mark: |
-| Unenrollment |  | :heavy_check_mark: |
-| Notes |  | :heavy_check_mark: |
-| Courses completion | :heavy_check_mark: |  |
-| Activities completion | :heavy_check_mark: |  |
-| Courses last access | :heavy_check_mark: |  |
-| Competencies module completion | :heavy_check_mark: |  |
-| User competencies | :heavy_check_mark: |  |
-| User grades | :heavy_check_mark: |  |
+| Courses | X | X |
+| Users | X | X |
+| Group members |  | X |
+| Groups |  | X |
+| Enrollment | X | X |
+| Unenrollment |  | X |
+| Notes |  | X |
+| Courses completion | X |  |
+| Activities completion | X |  |
+| Courses last access | X |  |
+| Competencies module completion | X |  |
+| User competencies | X |  |
+| User grades | X |  |
 
 Need more functionalities ? Please [Contact us](http://www.myddleware.com/contact-us)
 
