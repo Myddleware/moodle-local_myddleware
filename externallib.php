@@ -101,11 +101,11 @@ class local_myddleware_external extends external_api {
                 ORDER BY timemodified ASC
                     ";
 
-		$queryParams = array(
-							'id' => (!empty($params['id']) ? $params['id'] : ''),
-							'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
-						);
-        $rs = $DB->get_recordset_sql($sql, $queryParams);
+        $queryparams = array(
+                             'id' => (!empty($params['id']) ? $params['id'] : ''),
+                             'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+                        );
+        $rs = $DB->get_recordset_sql($sql, $queryparams);
 
         $completions = array();
         if (!empty($rs)) {
@@ -187,7 +187,7 @@ class local_myddleware_external extends external_api {
         require_capability('moodle/user:viewdetails', $context);
 
         // Prepare the query condition.
-		if (!empty($id)) {
+        if (!empty($id)) {
             $where = ' la.id = :id';
         } else {
             $where = ' la.timeaccess > :timemodified';
@@ -203,11 +203,11 @@ class local_myddleware_external extends external_api {
                 WHERE
                     ".$where."
                 ";
-		$queryParams = array(
-							'id' => (!empty($params['id']) ? $params['id'] : ''),
-							'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
-						);
-        $rs = $DB->get_recordset_sql($sql, $queryParams);
+        $queryparams = array(
+                            'id' => (!empty($params['id']) ? $params['id'] : ''),
+                            'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+                        );
+        $rs = $DB->get_recordset_sql($sql, $queryparams);
 
         $lastaccess = array();
         if (!empty($rs)) {
@@ -271,18 +271,18 @@ class local_myddleware_external extends external_api {
         );
 
         // Prepare the query condition.
-		if (!empty($id)) {
+        if (!empty($id)) {
             $where = ' id = :id';
         } else {
             $where = ' timemodified > :timemodified';
         }
-		$queryParams = array(
-							'id' => (!empty($params['id']) ? $params['id'] : ''),
-							'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
-						);
+        $queryparams = array(
+                            'id' => (!empty($params['id']) ? $params['id'] : ''),
+                            'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+                        );
 
         // Select the courses modified after the datime $timemodified. We select them order by timemodified ascending.
-        $selectedcourses = $DB->get_records_select('course', $where, $queryParams, ' timemodified ASC ', 'id');
+        $selectedcourses = $DB->get_records_select('course', $where, $queryparams, ' timemodified ASC ', 'id');
 
         $returnedcourses = array();
         if (!empty($selectedcourses)) {
@@ -342,19 +342,19 @@ class local_myddleware_external extends external_api {
         );
 
         // Prepare the query condition.
-		if (!empty($id)) {
+        if (!empty($id)) {
             $where = ' deleted = 0 AND id = :id';
         } else {
             $where = ' deleted = 0 AND timemodified > :timemodified';
         }
-		$queryParams = array(
-							'id' => (!empty($params['id']) ? $params['id'] : ''),
-							'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
-						);
+        $queryparams = array(
+                            'id' => (!empty($params['id']) ? $params['id'] : ''),
+                            'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+                        );
 
         // Select the users modified after the datime $timemodified.
         $additionalfields = 'id, timemodified, lastnamephonetic, firstnamephonetic, middlename, alternatename';
-        $selectedusers = $DB->get_records_select('user', $where, $queryParams, ' timemodified ASC ', $additionalfields);
+        $selectedusers = $DB->get_records_select('user', $where, $queryparams, ' timemodified ASC ', $additionalfields);
         $returnedusers = array();
         if (!empty($selectedusers)) {
             // Call function get_users for each user found.
@@ -452,19 +452,19 @@ class local_myddleware_external extends external_api {
         );
 
         // Prepare the query condition.
-		if (!empty($id)) {
+        if (!empty($id)) {
             $where = ' id = :id';
         } else {
             $where = ' timemodified > :timemodified ';
         }
-		$queryParams = array(
-							'id' => (!empty($params['id']) ? $params['id'] : ''),
-							'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
-						);
+        $queryparams = array(
+                            'id' => (!empty($params['id']) ? $params['id'] : ''),
+                            'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+                        );
 
         $returnenrolments = array();
         // Select enrolment modified after the date in input.
-        $userenrolments = $DB->get_records_select('user_enrolments', $where, $queryParams, ' timemodified ASC ', '*');
+        $userenrolments = $DB->get_records_select('user_enrolments', $where, $queryparams, ' timemodified ASC ', '*');
         if (!empty($userenrolments)) {
             foreach ($userenrolments as $userenrolment) {
                 $instance = array();
@@ -548,18 +548,18 @@ class local_myddleware_external extends external_api {
         );
 
         // Prepare the query condition.
-		if (!empty($id)) {
+        if (!empty($id)) {
             $where = ' id = :id';
         } else {
             $where = ' timecompleted > :timemodified  OR reaggregate > 0 ';
         }
-		$queryParams = array(
-							'id' => (!empty($params['id']) ? $params['id'] : ''),
-							'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
-						);
+        $queryparams = array(
+                            'id' => (!empty($params['id']) ? $params['id'] : ''),
+                            'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+                        );
         $returncompletions = array();
         // Select enrolment modified after the date in input.
-        $selectedcompletions = $DB->get_records_select('course_completions', $where, $queryParams, ' timecompleted ASC ', '*');
+        $selectedcompletions = $DB->get_records_select('course_completions', $where, $queryparams, ' timecompleted ASC ', '*');
         if (!empty($selectedcompletions)) {
             // Date ref management : date ref is usually the timecompleted.
             // But if reaggregate is not empty we have to keep the smaller value of this field.
@@ -570,9 +570,8 @@ class local_myddleware_external extends external_api {
             // Because we have to read the completion after the next cron job runs.
             foreach ($selectedcompletions as $selectedcompletion) {
                 // Keep the smaller value of reaggregateif it exists.
-                if ($selectedcompletion->reaggregate > 0 && 
-                   ($selectedcompletion->reaggregate < $daterefoverride || $daterefoverride == -1)) 
-                {
+                if ($selectedcompletion->reaggregate > 0 &&
+                   ($selectedcompletion->reaggregate < $daterefoverride || $daterefoverride == -1)) {
                     $daterefoverride = $selectedcompletion->reaggregate;
                 }
             }
@@ -611,7 +610,8 @@ class local_myddleware_external extends external_api {
                 array(
                     'id' => new external_value(PARAM_INT, get_string('return_id', 'local_myddleware')),
                     'userid' => new external_value(PARAM_INT, get_string('return_userid', 'local_myddleware')),
-                    'courseid' => new external_value(PARAM_INT, get_string('return_courseid', 'local_myddleware'), VALUE_DEFAULT, 0),
+                    'courseid' => new external_value(
+                        PARAM_INT, get_string('return_courseid', 'local_myddleware'), VALUE_DEFAULT, 0),
                     'timeenrolled' => new external_value(PARAM_INT, get_string('return_timeenrolled', 'local_myddleware')),
                     'timestarted' => new external_value(PARAM_INT, get_string('return_timestarted', 'local_myddleware')),
                     'timecompleted' => new external_value(PARAM_INT, get_string('return_timecompleted', 'local_myddleware')),
@@ -656,18 +656,18 @@ class local_myddleware_external extends external_api {
         require_capability('moodle/competency:usercompetencyview', $context);
 
         // Prepare the query condition.
-		if (!empty($id)) {
+        if (!empty($id)) {
             $where = ' id = :id';
         } else {
             $where = ' timemodified > :timemodified';
         }
-		$queryParams = array(
-							'id' => (!empty($params['id']) ? $params['id'] : ''),
-							'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
-						);
+        $queryparams = array(
+                            'id' => (!empty($params['id']) ? $params['id'] : ''),
+                            'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+                        );
 
         // Select the user compencies modified after the datime $timemodified. We select them order by timemodified ascending.
-        $selectedusercompetencies = $DB->get_records_select('competency_usercomp', $where, $queryParams, ' timemodified ASC ');
+        $selectedusercompetencies = $DB->get_records_select('competency_usercomp', $where, $queryparams, ' timemodified ASC ');
 
         // Prepare result.
         $returnedusercompetencies = array();
@@ -787,18 +787,18 @@ class local_myddleware_external extends external_api {
         require_capability('moodle/competency:usercompetencyview', $context);
 
         // Prepare the query condition.
-		if (!empty($id)) {
+        if (!empty($id)) {
             $where = ' competency_modulecomp.id = :id';
         } else {
             $where = ' competency_modulecomp.timemodified > :timemodified';
         }
-		$queryParams = array(
-							'id' => (!empty($params['id']) ? $params['id'] : ''),
-							'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
-						);
+        $queryparams = array(
+                            'id' => (!empty($params['id']) ? $params['id'] : ''),
+                            'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+                        );
 
         $sql = "
-            SELECT 
+            SELECT
                 competency_modulecomp.id,
                 competency_modulecomp.cmid,
                 competency_modulecomp.timecreated,
@@ -820,10 +820,10 @@ class local_myddleware_external extends external_api {
             WHERE
                 ".$where."
             ";
-        
+
         // Select the user compencies modified after the datime $timemodified. We select them order by timemodified ascending.
-        $rs = $DB->get_recordset_sql($sql, $queryParams);
-       
+        $rs = $DB->get_recordset_sql($sql, $queryparams);
+
         $competencymodulecompletions = array();
         if (!empty($rs)) {
             foreach ($rs as $competencymodulecompletionrecords) {
@@ -896,16 +896,16 @@ class local_myddleware_external extends external_api {
         require_capability('moodle/user:viewdetails', $context);
 
         // Prepare the query condition.
-		if (!empty($id)) {
+        if (!empty($id)) {
             $where = ' grd.id = :id';
         } else {
             $where = ' grd.timemodified > :timemodified';
         }
-		$queryParams = array(
-							'id' => (!empty($params['id']) ? $params['id'] : ''),
-							'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
-						);
-						
+        $queryparams = array(
+                            'id' => (!empty($params['id']) ? $params['id'] : ''),
+                            'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+                        );
+
         // Retrieve token list (including linked users firstname/lastname and linked services name).
         $sql = "
                 SELECT
@@ -945,7 +945,7 @@ class local_myddleware_external extends external_api {
                     ".$where."
                 ORDER BY grd.timemodified ASC, grd.id ASC
                     ";
-        $rs = $DB->get_recordset_sql($sql, $queryParams);
+        $rs = $DB->get_recordset_sql($sql, $queryparams);
 
         $grades = array();
         if (!empty($rs)) {
