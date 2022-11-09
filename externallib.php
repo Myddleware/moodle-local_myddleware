@@ -611,7 +611,7 @@ class local_myddleware_external extends external_api {
                 array(
                     'id' => new external_value(PARAM_INT, get_string('return_id', 'local_myddleware')),
                     'userid' => new external_value(PARAM_INT, get_string('return_userid', 'local_myddleware')),
-                    'courseid' => new external_value(PARAM_INT, get_string('return_courseid', 'local_myddleware')),
+                    'courseid' => new external_value(PARAM_INT, get_string('return_courseid', 'local_myddleware'), VALUE_DEFAULT, 0),
                     'timeenrolled' => new external_value(PARAM_INT, get_string('return_timeenrolled', 'local_myddleware')),
                     'timestarted' => new external_value(PARAM_INT, get_string('return_timestarted', 'local_myddleware')),
                     'timecompleted' => new external_value(PARAM_INT, get_string('return_timecompleted', 'local_myddleware')),
@@ -719,7 +719,7 @@ class local_myddleware_external extends external_api {
                     'competency_shortname' => new external_value(
                         PARAM_TEXT, get_string('return_competency_shortname', 'local_myddleware')),
                     'competency_description' => new external_value(
-                        PARAM_TEXT, get_string('return_competency_description', 'local_myddleware')),
+                        PARAM_CLEANHTML, get_string('return_competency_description', 'local_myddleware')),
                     'competency_descriptionformat' => new external_value(
                         PARAM_INT, get_string('return_competency_descriptionformat', 'local_myddleware')),
                     'competency_idnumber' => new external_value(
@@ -807,7 +807,7 @@ class local_myddleware_external extends external_api {
                 competency_modulecomp.sortorder,
                 competency_modulecomp.competencyid,
                 competency_modulecomp.ruleoutcome,
-                course.id,
+                course.id courseid,
                 modules.name as modulename,
                 course.fullname as coursemodulename
             FROM {competency_modulecomp} competency_modulecomp
