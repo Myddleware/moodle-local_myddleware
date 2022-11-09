@@ -46,7 +46,7 @@ class local_myddleware_external extends external_api {
     public static function get_users_completion_parameters() {
         return new external_function_parameters(
             array(
-                'timemodified' => new external_value(
+                'time_modified' => new external_value(
                     PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
                 'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
             )
@@ -65,7 +65,7 @@ class local_myddleware_external extends external_api {
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_users_completion_parameters(),
-            array('timemodified' => $timemodified, 'id' => $id)
+            array('time_modified' => $timemodified, 'id' => $id)
         );
 
         // Context validation.
@@ -156,7 +156,7 @@ class local_myddleware_external extends external_api {
     public static function get_users_last_access_parameters() {
         return new external_function_parameters(
             array(
-                'timemodified' => new external_value(
+                'time_modified' => new external_value(
                     PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
                 'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
             )
@@ -177,7 +177,7 @@ class local_myddleware_external extends external_api {
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_users_last_access_parameters(),
-            array('timemodified' => $timemodified, 'id' => $id)
+            array('time_modified' => $timemodified, 'id' => $id)
         );
 
         // Context validation.
@@ -247,7 +247,7 @@ class local_myddleware_external extends external_api {
     public static function get_courses_by_date_parameters() {
         return new external_function_parameters(
             array(
-                'timemodified' => new external_value(
+                'time_modified' => new external_value(
                     PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
                 'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
             )
@@ -267,7 +267,7 @@ class local_myddleware_external extends external_api {
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_courses_by_date_parameters(),
-            array('timemodified' => $timemodified, 'id' => $id)
+            array('time_modified' => $timemodified, 'id' => $id)
         );
 
         // Prepare the query condition.
@@ -318,7 +318,7 @@ class local_myddleware_external extends external_api {
     public static function get_users_by_date_parameters() {
         return new external_function_parameters(
             array(
-                'timemodified' => new external_value(
+                'time_modified' => new external_value(
                     PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
                 'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
             )
@@ -338,7 +338,7 @@ class local_myddleware_external extends external_api {
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_users_by_date_parameters(),
-            array('timemodified' => $timemodified, 'id' => $id)
+            array('time_modified' => $timemodified, 'id' => $id)
         );
 
         // Prepare the query condition.
@@ -428,7 +428,7 @@ class local_myddleware_external extends external_api {
     public static function get_enrolments_by_date_parameters() {
         return new external_function_parameters(
             array(
-                'timemodified' => new external_value(
+                'time_modified' => new external_value(
                     PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
                 'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
             )
@@ -448,7 +448,7 @@ class local_myddleware_external extends external_api {
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_enrolments_by_date_parameters(),
-            array('timemodified' => $timemodified, 'id' => $id)
+            array('time_modified' => $timemodified, 'id' => $id)
         );
 
         // Prepare the query condition.
@@ -524,7 +524,7 @@ class local_myddleware_external extends external_api {
     public static function get_course_completion_by_date_parameters() {
         return new external_function_parameters(
             array(
-                'timemodified' => new external_value(
+                'time_modified' => new external_value(
                     PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
                 'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
             )
@@ -544,14 +544,14 @@ class local_myddleware_external extends external_api {
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_course_completion_by_date_parameters(),
-            array('timemodified' => $timemodified, 'id' => $id)
+            array('time_modified' => $timemodified, 'id' => $id)
         );
 
         // Prepare the query condition.
 		if (!empty($id)) {
             $where = ' id = :id';
         } else {
-            $where = ' timemodified > :timemodified  OR reaggregate > 0 ';
+            $where = ' timecompleted > :timemodified  OR reaggregate > 0 ';
         }
 		$queryParams = array(
 							'id' => (!empty($params['id']) ? $params['id'] : ''),
@@ -572,6 +572,7 @@ class local_myddleware_external extends external_api {
                 // Keep the smaller value of reaggregateif it exists.
                 if ($selectedcompletion->reaggregate > 0 && 
                    ($selectedcompletion->reaggregate < $daterefoverride || $daterefoverride == -1)) 
+                {
                     $daterefoverride = $selectedcompletion->reaggregate;
                 }
             }
@@ -628,7 +629,7 @@ class local_myddleware_external extends external_api {
     public static function get_user_compentencies_by_date_parameters() {
         return new external_function_parameters(
             array(
-                'timemodified' => new external_value(
+                'time_modified' => new external_value(
                     PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
                 'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
             )
@@ -646,7 +647,7 @@ class local_myddleware_external extends external_api {
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_user_compentencies_by_date_parameters(),
-            array('timemodified' => $timemodified, 'id' => $id)
+            array('time_modified' => $timemodified, 'id' => $id)
         );
 
         // Context validation.
@@ -759,7 +760,7 @@ class local_myddleware_external extends external_api {
     public static function get_competency_module_completion_by_date_parameters() {
         return new external_function_parameters(
             array(
-                'timemodified' => new external_value(
+                'time_modified' => new external_value(
                     PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
                 'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
             )
@@ -777,7 +778,7 @@ class local_myddleware_external extends external_api {
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_user_compentencies_by_date_parameters(),
-            array('timemodified' => $timemodified, 'id' => $id)
+            array('time_modified' => $timemodified, 'id' => $id)
         );
 
         // Context validation.
@@ -812,7 +813,7 @@ class local_myddleware_external extends external_api {
             FROM {competency_modulecomp} competency_modulecomp
                 LEFT OUTER JOIN {course_modules} course_modules
                     ON competency_modulecomp.cmid = course_modules.id
-                    LEFT OUTER JOIN{modules} modules
+                    LEFT OUTER JOIN {modules} modules
                         ON course_modules.module = modules.id
                     LEFT OUTER JOIN {course} course
                         ON course_modules.course = course.id
@@ -829,10 +830,10 @@ class local_myddleware_external extends external_api {
                 foreach ($competencymodulecompletionrecords as $key => $value) {
                     $competencymodulecompletion[$key] = $value;
                 }
-                $competencymodulecompletions[] = $grade;
+                $competencymodulecompletions[] = $competencymodulecompletion;
             }
         }
-        return $returnedcompetencymodulecompletion;
+        return $competencymodulecompletions;
     }
 
 
@@ -867,7 +868,7 @@ class local_myddleware_external extends external_api {
     public static function get_user_grades_parameters() {
         return new external_function_parameters(
             array(
-                'timemodified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'time_modified' => new external_value(PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
                 'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
             )
         );
@@ -885,7 +886,7 @@ class local_myddleware_external extends external_api {
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_users_completion_parameters(),
-            array('timemodified' => $timemodified, 'id' => $id)
+            array('time_modified' => $timemodified, 'id' => $id)
         );
 
         // Context validation.
