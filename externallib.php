@@ -83,23 +83,23 @@ class local_myddleware_external extends external_api {
 
         // Retrieve token list (including linked users firstname/lastname and linked services name).
         $sql = "
-                SELECT
-                    cmc.id,
-                    cmc.userid,
-                    cmc.completionstate,
-                    cmc.timemodified,
-                    cm.id coursemoduleid,
-                    cm.module moduletype,
-                    cm.instance,
-                    cm.section,
-                    cm.course courseid
-                FROM {course_modules_completion} cmc
-                INNER JOIN {course_modules} cm
-                    ON cm.id = cmc.coursemoduleid
-                WHERE
-                    ".$where."
-                ORDER BY timemodified ASC
-                    ";
+            SELECT
+                cmc.id,
+                cmc.userid,
+                cmc.completionstate,
+                cmc.timemodified,
+                cm.id coursemoduleid,
+                cm.module moduletype,
+                cm.instance,
+                cm.section,
+                cm.course courseid
+            FROM {course_modules_completion} cmc
+            INNER JOIN {course_modules} cm
+                ON cm.id = cmc.coursemoduleid
+            WHERE
+                ".$where."
+            ORDER BY timemodified ASC
+                ";
 
         $queryparams = array(
                              'id' => (!empty($params['id']) ? $params['id'] : ''),
@@ -194,15 +194,15 @@ class local_myddleware_external extends external_api {
         }
 
         $sql = "
-                SELECT
-                    la.id,
-                    la.userid,
-                    la.courseid,
-                    la.timeaccess lastaccess
-                FROM {user_lastaccess} la
-                WHERE
-                    ".$where."
-                ";
+            SELECT
+                la.id,
+                la.userid,
+                la.courseid,
+                la.timeaccess lastaccess
+            FROM {user_lastaccess} la
+            WHERE
+                ".$where."
+            ";
         $queryparams = array(
                             'id' => (!empty($params['id']) ? $params['id'] : ''),
                             'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
@@ -909,43 +909,43 @@ class local_myddleware_external extends external_api {
 
         // Retrieve token list (including linked users firstname/lastname and linked services name).
         $sql = "
-                SELECT
-                    grd.id,
-                    grd.itemid,
-                    grd.userid,
-                    grd.rawgrade,
-                    grd.rawgrademax,
-                    grd.rawgrademin,
-                    grd.rawscaleid,
-                    grd.usermodified,
-                    grd.finalgrade,
-                    grd.hidden,
-                    grd.locked,
-                    grd.locktime,
-                    grd.exported,
-                    grd.overridden,
-                    grd.excluded,
-                    grd.feedback,
-                    grd.feedbackformat,
-                    grd.information,
-                    grd.informationformat,
-                    grd.timecreated,
-                    grd.timemodified,
-                    grd.aggregationstatus,
-                    grd.aggregationweight,
-                    itm.courseid,
-                    itm.itemname,
-                    crs.fullname course_fullname,
-                    crs.shortname course_shortname
-                FROM {grade_grades} grd
-                INNER JOIN {grade_items} itm
-                    ON grd.itemid = itm.id
-                LEFT OUTER JOIN {course} crs
-                    ON itm.courseid = crs.id
-                WHERE
-                    ".$where."
-                ORDER BY grd.timemodified ASC, grd.id ASC
-                    ";
+            SELECT
+                grd.id,
+                grd.itemid,
+                grd.userid,
+                grd.rawgrade,
+                grd.rawgrademax,
+                grd.rawgrademin,
+                grd.rawscaleid,
+                grd.usermodified,
+                grd.finalgrade,
+                grd.hidden,
+                grd.locked,
+                grd.locktime,
+                grd.exported,
+                grd.overridden,
+                grd.excluded,
+                grd.feedback,
+                grd.feedbackformat,
+                grd.information,
+                grd.informationformat,
+                grd.timecreated,
+                grd.timemodified,
+                grd.aggregationstatus,
+                grd.aggregationweight,
+                itm.courseid,
+                itm.itemname,
+                crs.fullname course_fullname,
+                crs.shortname course_shortname
+            FROM {grade_grades} grd
+            INNER JOIN {grade_items} itm
+                ON grd.itemid = itm.id
+            LEFT OUTER JOIN {course} crs
+                ON itm.courseid = crs.id
+            WHERE
+                ".$where."
+            ORDER BY grd.timemodified ASC, grd.id ASC
+                ";
         $rs = $DB->get_recordset_sql($sql, $queryparams);
 
         $grades = array();
