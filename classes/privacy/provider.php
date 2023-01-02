@@ -25,8 +25,6 @@
 
 namespace myddleware\privacy;
 
-// defined('MOODLE_INTERNAL') || die();
-
 
 /**
  * Privacy provider for local_myddleware implementing null provider
