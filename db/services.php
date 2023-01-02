@@ -119,7 +119,7 @@ $services = array(
                         'enrol_manual_enrol_users',
                         'enrol_manual_unenrol_users'
                 ),
-                'restrictedusers' => 0,
+                'restrictedusers' => 1,
                 'enabled' => 1,
             ),
 );
