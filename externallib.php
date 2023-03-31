@@ -308,6 +308,79 @@ class local_myddleware_external extends external_api {
         return core_course_external::get_courses_returns();
     }
 
+      /**
+     * Returns description of method parameters.
+     * @return external_function_parameters.
+     */
+    public static function get_groups_by_date_parameters() {
+        return new external_function_parameters(
+            array(
+                'time_modified' => new external_value(
+                    PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
+            )
+        );
+    }
+
+    /**
+     * This function search the groups created or modified after after the datime $timemodified.
+     * @param int $timemodified
+     * @param int $id
+     * @return the list of group.
+     */
+    public static function get_groups_by_date($timemodified, $id) {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . "/group/externallib.php");
+
+        // Parameter validation.
+        $params = self::validate_parameters(
+            self::get_groups_by_date_parameters(),
+            array('time_modified' => $timemodified, 'id' => $id)
+        );
+
+        // Prepare the query condition.
+        if (!empty($id)) {
+            $where = ' id = :id';
+        } else {
+            $where = ' timemodified > :timemodified';
+        }
+        $queryparams = array(
+                            'id' => (!empty($params['id']) ? $params['id'] : ''),
+                            'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+                        );
+
+        // Select the groups modified after the datime $timemodified. We select them order by timemodified ascending.
+        $selectedgroups = $DB->get_records_select('groups', $where, $queryparams, ' timemodified ASC ', '*');
+
+        $returnedgroups = array();
+        if (!empty($selectedgroups)) {
+            // Call the function get_groups for each group to keep the timemodified order.
+            foreach ($selectedgroups as $key => $value) {
+                // Call the standard API function to return the group detail.
+                $groupdetails = core_group_external::get_groups(array($value->id));
+				// Add the time modified to the standard structure
+				$groupdetails[0]['timemodified'] = $value->timemodified;
+                $returnedgroups[] = $groupdetails[0];
+            }
+        }
+        return $returnedgroups;
+    }
+
+
+    /**
+     * Returns description of method result value.
+     * @return external_description.
+     */
+    public static function get_groups_by_date_returns() {
+		global $CFG;
+        require_once($CFG->dirroot . "/group/externallib.php");
+        // Get the standard structure for groups
+        $groupStandardStructure = core_group_external::get_groups_returns();
+		// We add the time modified field into the standard structure 
+		$groupStandardStructure->content->keys['timemodified'] = new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware'));
+		return $groupStandardStructure;
+    }
+
 
 
 
