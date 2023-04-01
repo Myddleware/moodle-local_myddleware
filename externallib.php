@@ -308,7 +308,7 @@ class local_myddleware_external extends external_api {
         return core_course_external::get_courses_returns();
     }
 
-      /**
+    /**
      * Returns description of method parameters.
      * @return external_function_parameters.
      */
@@ -358,8 +358,8 @@ class local_myddleware_external extends external_api {
             foreach ($selectedgroups as $key => $value) {
                 // Call the standard API function to return the group detail.
                 $groupdetails = core_group_external::get_groups(array($value->id));
-				// Add the time modified to the standard structure
-				$groupdetails[0]['timemodified'] = $value->timemodified;
+                // Add the time modified to the standard structure.
+                $groupdetails[0]['timemodified'] = $value->timemodified;
                 $returnedgroups[] = $groupdetails[0];
             }
         }
@@ -372,17 +372,18 @@ class local_myddleware_external extends external_api {
      * @return external_description.
      */
     public static function get_groups_by_date_returns() {
-		global $CFG;
+        global $CFG;
         require_once($CFG->dirroot . "/group/externallib.php");
-        // Get the standard structure for groups
-        $groupStandardStructure = core_group_external::get_groups_returns();
-		// We add the time modified field into the standard structure 
-		$groupStandardStructure->content->keys['timemodified'] = new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware'));
-		return $groupStandardStructure;
+        // Get the standard structure for groups.
+        $groupstandardstructure = core_group_external::get_groups_returns();
+        // We add the time modified field into the standard structure.
+        $groupstandardstructure->content->keys['timemodified'] = new external_value(
+            PARAM_INT, get_string('return_timemodified', 'local_myddleware'));
+        return $groupstandardstructure;
     }
-	
-	
-	    /**
+
+
+    /**
      * Returns description of method parameters.
      * @return external_function_parameters.
      */
@@ -440,16 +441,16 @@ class local_myddleware_external extends external_api {
                         );
         $rs = $DB->get_recordset_sql($sql, $queryparams);
 
-        $groupMembers = array();
+        $groupmembers = array();
         if (!empty($rs)) {
-            foreach ($rs as $groupMembersRecords) {
-                foreach ($groupMembersRecords as $key => $value) {
-                    $groupMember[$key] = $value;
+            foreach ($rs as $groupmembersrecords) {
+                foreach ($groupmembersrecords as $key => $value) {
+                    $groupmember[$key] = $value;
                 }
-                $groupMembers[] = $groupMember;
+                $groupmembers[] = $groupmember;
             }
         }
-        return $groupMembers;
+        return $groupmembers;
     }
 
 

@@ -8,8 +8,8 @@ Here is the list of available modules in source (reading) and target (writing) :
 | --- | --- | --- |
 | Courses | X | X |
 | Users | X | X |
-| Group members |  | X |
-| Groups |  | X |
+| Group members | X | X |
+| Groups | X | X |
 | Enrollment | X | X |
 | Unenrollment |  | X |
 | Notes |  | X |
