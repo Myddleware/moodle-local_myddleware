@@ -380,8 +380,95 @@ class local_myddleware_external extends external_api {
 		$groupStandardStructure->content->keys['timemodified'] = new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware'));
 		return $groupStandardStructure;
     }
+	
+	
+	    /**
+     * Returns description of method parameters.
+     * @return external_function_parameters.
+     */
+    public static function get_group_members_by_date_parameters() {
+        return new external_function_parameters(
+            array(
+                'time_modified' => new external_value(
+                    PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
+            )
+        );
+    }
 
 
+    /**
+     * This function search all the group members.
+     * Only group members after the $timeadded are returned.
+     * @param int $timemodified
+     * @param int $id
+     * @return an array with the detail of each group members (id, groupid, time added and userid).
+     */
+    public static function get_group_members_by_date($timemodified, $id) {
+        global $USER, $DB;
+        // Parameter validation.
+        $params = self::validate_parameters(
+            self::get_users_last_access_parameters(),
+            array('time_modified' => $timemodified, 'id' => $id)
+        );
+
+        // Context validation.
+        $context = context_user::instance($USER->id);
+        self::validate_context($context);
+        require_capability('moodle/course:managegroups', $context);
+
+        // Prepare the query condition.
+        if (!empty($id)) {
+            $where = ' gm.id = :id';
+        } else {
+            $where = ' gm.timeadded > :timemodified';
+        }
+
+        $sql = "
+            SELECT
+                gm.id,
+                gm.groupid,
+                gm.userid,
+                gm.timeadded
+            FROM {groups_members} gm
+            WHERE
+                ".$where."
+            ";
+        $queryparams = array(
+                            'id' => (!empty($params['id']) ? $params['id'] : ''),
+                            'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+                        );
+        $rs = $DB->get_recordset_sql($sql, $queryparams);
+
+        $groupMembers = array();
+        if (!empty($rs)) {
+            foreach ($rs as $groupMembersRecords) {
+                foreach ($groupMembersRecords as $key => $value) {
+                    $groupMember[$key] = $value;
+                }
+                $groupMembers[] = $groupMember;
+            }
+        }
+        return $groupMembers;
+    }
+
+
+    /**
+     * Returns description of method result value.
+     * @return external_description.
+     */
+    public static function get_group_members_by_date_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                array(
+                    'id' => new external_value(PARAM_INT, get_string('return_id', 'local_myddleware')),
+                    'groupid' => new external_value(PARAM_INT, get_string('return_groupid', 'local_myddleware')),
+                    'userid' => new external_value(PARAM_INT, get_string('return_userid', 'local_myddleware')),
+                    'timeadded' => new external_value(PARAM_INT, get_string('return_timeadded', 'local_myddleware'))
+                )
+            )
+        );
+    }
 
 
     /**

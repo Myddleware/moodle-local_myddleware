@@ -48,12 +48,18 @@ $functions = array(
             'description' => 'Return course list',
             'type'        => 'read',
     ),
-    
     'local_myddleware_get_groups_by_date' => array(
         'classname'   => 'local_myddleware_external',
         'methodname'  => 'get_groups_by_date',
         'classpath'   => 'local/myddleware/externallib.php',
         'description' => 'Return group list',
+        'type'        => 'read',
+    ),
+    'local_myddleware_get_group_members_by_date' => array(
+        'classname'   => 'local_myddleware_external',
+        'methodname'  => 'get_group_members_by_date',
+        'classpath'   => 'local/myddleware/externallib.php',
+        'description' => 'Return group member list',
         'type'        => 'read',
     ),
     'local_myddleware_get_users_by_date' => array(
@@ -109,6 +115,7 @@ $services = array(
                         'local_myddleware_get_users_completion',
                         'local_myddleware_get_courses_by_date',
                         'local_myddleware_get_groups_by_date',
+                        'local_myddleware_get_group_members_by_date',
                         'local_myddleware_get_users_by_date',
                         'local_myddleware_get_enrolments_by_date',
                         'local_myddleware_get_course_completion_by_date',
