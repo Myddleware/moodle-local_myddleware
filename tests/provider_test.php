@@ -13,7 +13,7 @@ use core_privacy\local\metadata\types\external_location;
 
 class provider_test extends advanced_testcase
 {
-    public function test_get_metadata_part2()
+    public function test_get_metadata()
     {
         $this->resetAfterTest();
         $provider = new provider();

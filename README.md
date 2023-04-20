@@ -62,6 +62,11 @@ Add the URL of your Moodle instance and your token in Myddleware
 
 *Congratulations, you‘ve created your Moodle connector ! You can now use it to synchronise data to and from this solution.*
 
+### Running the tests for your plugin
+in your root directory, run the following command. Make sure you have installed the phpunit package and initialized it.
+
+vendor/bin/phpunit local/myddleware/tests/provider_test.php --testdox
+
 ## Myddleware
 
 ### More about Myddleware
