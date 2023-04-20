@@ -25,6 +25,9 @@
 
 namespace myddleware\privacy;
 
+use \core_privacy\local\request\plugin\provider as plugin_provider;
+use core_privacy\local\metadata\collection;
+
 
 /**
  * Privacy provider for local_myddleware implementing null provider
@@ -34,7 +37,7 @@ namespace myddleware\privacy;
  * @author     Myddleware ltd
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider implements \core_privacy\local\metadata\null_provider {
+class provider implements plugin_provider {
 
     /**
      * Get the language string identifier with the component's language
@@ -44,5 +47,15 @@ class provider implements \core_privacy\local\metadata\null_provider {
      */
     public static function get_reason(): string {
         return 'privacy:metadata';
+    }
+
+    public static function get_metadata(collection $collection): collection {
+        $collection->add_external_location_link('myddleware', [
+                'userid' => 'privacy:metadata:myddleware_client:userid',
+                'fullname' => 'privacy:metadata:myddleware_client:fullname',
+                'email' => 'privacy:metadata:myddleware_client:email',
+            ], 'privacy:metadata:myddleware_client');
+    
+        return $collection;
     }
 }
