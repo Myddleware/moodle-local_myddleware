@@ -25,7 +25,6 @@
 
 namespace myddleware\privacy;
 
-use \core_privacy\local\request\plugin\provider as plugin_provider;
 use core_privacy\local\metadata\collection;
 
 
@@ -37,24 +36,67 @@ use core_privacy\local\metadata\collection;
  * @author     Myddleware ltd
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider implements plugin_provider {
+class provider implements
+        // This plugin export data to external systems
+        \core_privacy\local\metadata\provider {
 
-    /**
-     * Get the language string identifier with the component's language
-     * file to explain why this plugin stores no data.
-     *
-     * @return  string
-     */
-    public static function get_reason(): string {
-        return 'privacy:metadata';
-    }
-
+    /* Returns metadata.
+    *
+    * @param collection $collection The initialised collection to add items to.
+    * @return collection A listing of user data stored through this system.
+    */
     public static function get_metadata(collection $collection): collection {
+        // Personal information has to be passed to Myddleware.
+        // This includes the user email, fullname...
         $collection->add_external_location_link('myddleware', [
-                'userid' => 'privacy:metadata:myddleware_client:userid',
-                'fullname' => 'privacy:metadata:myddleware_client:fullname',
-                'email' => 'privacy:metadata:myddleware_client:email',
-            ], 'privacy:metadata:myddleware_client');
+                'userid' => 'privacy:metadata:myddleware:userid',
+                'fullname' => 'privacy:metadata:myddleware:fullname',
+                'email' => 'privacy:metadata:myddleware:email',
+                'username' => 'privacy:metadata:myddleware:username',
+                'id' => 'privacy:metadata:myddleware:id',
+            'password' => 'privacy:metadata:myddleware:password',
+            'createpassword' => 'privacy:metadata:myddleware:createpassword',
+            'firstname' => 'privacy:metadata:myddleware:firstname',
+            'lastname' => 'privacy:metadata:myddleware:lastname',
+            'auth' => 'privacy:metadata:myddleware:auth',
+            'idnumber' => 'privacy:metadata:myddleware:idnumber',
+            'lang' => 'privacy:metadata:myddleware:lang',
+            'calendartype' => 'privacy:metadata:myddleware:calendartype',
+            'theme' => 'privacy:metadata:myddleware:theme',
+            'timezone' => 'privacy:metadata:myddleware:timezone',
+            'mailformat' => 'privacy:metadata:myddleware:mailformat',
+            'description' => 'privacy:metadata:myddleware:description',
+            'city' => 'privacy:metadata:myddleware:city',
+            'country' => 'privacy:metadata:myddleware:country',
+            'firstnamephonetic' => 'privacy:metadata:myddleware:firstnamephonetic',
+            'lastnamephonetic' => 'privacy:metadata:myddleware:lastnamephonetic',
+            'middlename' => 'privacy:metadata:myddleware:middlename',
+            'alternatename' => 'privacy:metadata:myddleware:alternatename',
+            'fullname' => 'privacy:metadata:myddleware:fullname',
+            'address' => 'privacy:metadata:myddleware:address',
+            'phone1' => 'privacy:metadata:myddleware:phone1',
+            'phone2' => 'privacy:metadata:myddleware:phone2',
+            'icq' => 'privacy:metadata:myddleware:icq',
+            'skype' => 'privacy:metadata:myddleware:skype',
+            'yahoo' => 'privacy:metadata:myddleware:yahoo',
+            'aim' => 'privacy:metadata:myddleware:aim',
+            'msn' => 'privacy:metadata:myddleware:msn',
+            'department' => 'privacy:metadata:myddleware:department',
+            'institution' => 'privacy:metadata:myddleware:institution',
+            'interests' => 'privacy:metadata:myddleware:interests',
+            'firstaccess' => 'privacy:metadata:myddleware:firstaccess',
+            'lastaccess' => 'privacy:metadata:myddleware:lastaccess',
+            'suspended' => 'privacy:metadata:myddleware:suspended',
+            'confirmed' => 'privacy:metadata:myddleware:confirmed',
+            'descriptionformat' => 'privacy:metadata:myddleware:descriptionformat',
+            'url' => 'privacy:metadata:myddleware:url',
+            'profileimageurlsmall' => 'privacy:metadata:myddleware:profileimageurlsmall',
+            'profileimageurl' => 'privacy:metadata:myddleware:profileimageurl',
+            'preferences' => 'privacy:metadata:myddleware:preferences',
+            'customfields' => 'privacy:metadata:myddleware:customfields',
+            'timemodified' => 'privacy:metadata:myddleware:timemodified',
+
+            ], 'privacy:metadata:myddleware');
     
         return $collection;
     }
