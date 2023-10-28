@@ -74,6 +74,11 @@ class local_myddleware_external extends external_api {
 
         require_capability('moodle/user:viewdetails', $context);
 
+		// Add tenant condition.
+		/** @uses \tool_tenant\tenancy::get_users_subquery */
+		$tenantcondition = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+			[true, true, 'u.id'], '');
+	
         // Prepare the query condition.
         if (!empty($id)) {
             $where = ' cmc.id = :id';
@@ -96,7 +101,9 @@ class local_myddleware_external extends external_api {
             FROM {course_modules_completion} cmc
             INNER JOIN {course_modules} cm
                 ON cm.id = cmc.coursemoduleid
-            WHERE
+			INNER JOIN {users} u
+				ON u.id = cmc.userid
+            WHERE $tenantcondition
                 ".$where."
             ORDER BY timemodified ASC
                 ";
@@ -186,6 +193,11 @@ class local_myddleware_external extends external_api {
 
         require_capability('moodle/user:viewdetails', $context);
 
+		// Add tenant condition.
+		/** @uses \tool_tenant\tenancy::get_users_subquery */
+		$tenantcondition = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+			[true, true, 'u.id'], '');
+	
         // Prepare the query condition.
         if (!empty($id)) {
             $where = ' la.id = :id';
@@ -200,8 +212,10 @@ class local_myddleware_external extends external_api {
                 la.courseid,
                 la.timeaccess lastaccess
             FROM {user_lastaccess} la
+				INNER JOIN {user} u
+					ON u.id = la.userid
             WHERE
-                ".$where."
+                $tenantcondition ".$where."
             ";
         $queryparams = array(
                             'id' => (!empty($params['id']) ? $params['id'] : ''),
