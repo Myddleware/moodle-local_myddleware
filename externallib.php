@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . "/externallib.php");
 
 use core_competency\user_competency;
+use core_reportbuilder\local\helpers\database;
 
 /**
  * Myddleware external functions
@@ -74,10 +75,8 @@ class local_myddleware_external extends external_api {
 
         require_capability('moodle/user:viewdetails', $context);
 
-        // Add tenant condition.
-        /** @uses \tool_tenant\tenancy::get_users_subquery */
-        $tenantcondition = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
-            [true, true, 'u.id'], '');
+        //Get the subquery to filter only records linked to the tenant of the current user 
+		$whereTenant = \tool_tenant\tenancy::get_users_subquery(false, true, "{user}.id");
     
         // Prepare the query condition.
         if (!empty($id)) {
@@ -101,9 +100,9 @@ class local_myddleware_external extends external_api {
             FROM {course_modules_completion} cmc
             INNER JOIN {course_modules} cm
                 ON cm.id = cmc.coursemoduleid
-            INNER JOIN {users} u
-                ON u.id = cmc.userid
-            WHERE $tenantcondition
+            INNER JOIN {users}
+                ON {users}.id = cmc.userid
+            WHERE $whereTenant
                 ".$where."
             ORDER BY timemodified ASC
                 ";
@@ -193,11 +192,9 @@ class local_myddleware_external extends external_api {
 
         require_capability('moodle/user:viewdetails', $context);
 
-        // Add tenant condition.
-        /** @uses \tool_tenant\tenancy::get_users_subquery */
-        $tenantcondition = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
-            [true, true, 'u.id'], '');
-    
+        //Get the subquery to filter only records linked to the tenant of the current user 
+		$whereTenant = \tool_tenant\tenancy::get_users_subquery(false, true, "{user}.id");
+		
         // Prepare the query condition.
         if (!empty($id)) {
             $where = ' la.id = :id';
@@ -212,10 +209,10 @@ class local_myddleware_external extends external_api {
                 la.courseid,
                 la.timeaccess lastaccess
             FROM {user_lastaccess} la
-                INNER JOIN {user} u
-                    ON u.id = la.userid
+                INNER JOIN {user}
+                    ON {user}.id = la.userid
             WHERE
-                $tenantcondition ".$where."
+                $whereTenant ".$where."
             ";
         $queryparams = array(
                             'id' => (!empty($params['id']) ? $params['id'] : ''),
@@ -432,10 +429,8 @@ class local_myddleware_external extends external_api {
         self::validate_context($context);
         require_capability('moodle/course:managegroups', $context);
 		
-		// Add tenant condition.
-        /** @uses \tool_tenant\tenancy::get_users_subquery */
-        $tenantcondition = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
-            [true, true, 'u.id'], '');
+        //Get the subquery to filter only records linked to the tenant of the current user 
+		$whereTenant = \tool_tenant\tenancy::get_users_subquery(false, true, "{user}.id");
 
         // Prepare the query condition.
         if (!empty($id)) {
@@ -451,10 +446,10 @@ class local_myddleware_external extends external_api {
                 gm.userid,
                 gm.timeadded
             FROM {groups_members} gm
-				INNER JOIN {user} u 
-					ON u.id = gm.userid
+				INNER JOIN {user} 
+					ON {user}.id = gm.userid
             WHERE
-                $tenantcondition ".$where."
+                $whereTenant ".$where."
             ";
         $queryparams = array(
                             'id' => (!empty($params['id']) ? $params['id'] : ''),
@@ -523,20 +518,27 @@ class local_myddleware_external extends external_api {
             array('time_modified' => $timemodified, 'id' => $id)
         );
 
+		//Get the subquery to filter only records linked to the tenant of the current user 
+		$whereTenant = \tool_tenant\tenancy::get_users_subquery(false, true, "{user}.id");
+		
         // Prepare the query condition.
         if (!empty($id)) {
-            $where = ' deleted = 0 AND id = :id';
+            $where = " $whereTenant {user}.deleted = 0 AND {user}.id = :id ";
+        } elseif (!empty($timemodified)) {
+            $where = " $whereTenant {user}.deleted = 0 AND {user}.timemodified > :timemodified ";
         } else {
-            $where = ' deleted = 0 AND timemodified > :timemodified';
-        }
+			return null;
+		}
+		
+		// Prepare query parameters
         $queryparams = array(
                             'id' => (!empty($params['id']) ? $params['id'] : ''),
                             'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
                         );
+		// Get users
+        $selectedusers = $DB->get_records_select('user', $where, $queryparams, ' timemodified ASC ', '*');
 
-        // Select the users modified after the datime $timemodified.
-        $additionalfields = 'id, timemodified, lastnamephonetic, firstnamephonetic, middlename, alternatename';
-        $selectedusers = $DB->get_records_select('user', $where, $queryparams, ' timemodified ASC ', $additionalfields);
+		// Format return data
         $returnedusers = array();
         if (!empty($selectedusers)) {
             // Call function get_users for each user found.
