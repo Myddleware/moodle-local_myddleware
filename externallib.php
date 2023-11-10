@@ -635,17 +635,20 @@ class local_myddleware_external extends external_api {
             array('time_modified' => $timemodified, 'id' => $id)
         );
 
-        // Prepare the query condition.
-        if (!empty($id)) {
-            $where = ' id = :id';
+		//Get the subquery to filter only records linked to the tenant of the current user 
+		$whereTenant = \tool_tenant\tenancy::get_users_subquery(false, true, "userid");
+		
+        // Prepare the query condition with the tenant
+		if (!empty($id)) {
+            $where = " $whereTenant id = :id";
         } else {
-            $where = ' timemodified > :timemodified ';
+            $where = " $whereTenant timemodified > :timemodified ";
         }
+		
         $queryparams = array(
                             'id' => (!empty($params['id']) ? $params['id'] : ''),
                             'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
                         );
-
         $returnenrolments = array();
         // Select enrolment modified after the date in input.
         $userenrolments = $DB->get_records_select('user_enrolments', $where, $queryparams, ' timemodified ASC ', '*');
