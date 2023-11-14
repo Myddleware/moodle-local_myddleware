@@ -48,7 +48,6 @@ $string['return_timecreated'] = 'Time created';
 $string['return_timeenrolled'] = 'Time Enrolled';
 $string['return_timestarted'] = 'Time start';
 $string['return_timecompleted'] = 'Time completed';
-$string['return_timeadded'] = 'Time added';
 $string['return_date_ref_override'] = 'Reference date and time';
 $string['param_lastnamephonetic'] = 'Last name - phonetic';
 $string['param_firstnamephonetic'] = 'First name - phonetic';
