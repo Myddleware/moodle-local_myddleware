@@ -72,8 +72,7 @@ class local_myddleware_external extends external_api {
         // Context validation.
         $context = context_user::instance($USER->id);
         self::validate_context($context);
-
-        require_capability('moodle/user:viewdetails', $context);
+        require_capability('report/progress:view', $context);
 
         //Get the subquery to filter only records linked to the tenant of the current user 
 		$whereTenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
@@ -188,7 +187,6 @@ class local_myddleware_external extends external_api {
         // Context validation.
         $context = context_user::instance($USER->id);
         self::validate_context($context);
-
         require_capability('moodle/user:viewdetails', $context);
 
         //Get the subquery to filter only records linked to the tenant of the current user 
@@ -278,6 +276,11 @@ class local_myddleware_external extends external_api {
             self::get_courses_by_date_parameters(),
             array('time_modified' => $timemodified, 'id' => $id)
         );
+		
+		// Context validation.
+        $context = context_user::instance($USER->id);
+        self::validate_context($context);
+        require_capability('moodle/course:view', $context);
 
         // Prepare the query condition.
         if (!empty($id)) {
@@ -346,6 +349,11 @@ class local_myddleware_external extends external_api {
             self::get_groups_by_date_parameters(),
             array('time_modified' => $timemodified, 'id' => $id)
         );
+		
+		// Context validation.
+        $context = context_user::instance($USER->id);
+        self::validate_context($context);
+        require_capability('moodle/course:view', $context);
 
         // Prepare the query condition.
         if (!empty($id)) {
@@ -514,6 +522,11 @@ class local_myddleware_external extends external_api {
             self::get_users_by_date_parameters(),
             array('time_modified' => $timemodified, 'id' => $id)
         );
+		
+		 // Context validation.
+        $context = context_user::instance($USER->id);
+        self::validate_context($context);
+        require_capability('moodle/user:viewdetails', $context);
 
         //Get the subquery to filter only records linked to the tenant of the current user 
         $whereTenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
@@ -632,6 +645,11 @@ class local_myddleware_external extends external_api {
             self::get_enrolments_by_date_parameters(),
             array('time_modified' => $timemodified, 'id' => $id)
         );
+		
+		// Context validation.
+        $context = context_user::instance($USER->id);
+        self::validate_context($context);
+        require_capability('enrol/manual:manage', $context);
 
         //Get the subquery to filter only records linked to the tenant of the current user 
 		$whereTenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
@@ -732,7 +750,12 @@ class local_myddleware_external extends external_api {
             self::get_course_completion_by_date_parameters(),
             array('time_modified' => $timemodified, 'id' => $id)
         );
-        
+
+		// Context validation.
+        $context = context_user::instance($USER->id);
+        self::validate_context($context);
+        require_capability('report/completion:view', $context);
+
         //Get the subquery to filter only records linked to the tenant of the current user 
 		$whereTenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
             [true, true, 'userid'], '');
@@ -1080,14 +1103,13 @@ class local_myddleware_external extends external_api {
 
         // Parameter validation.
         $params = self::validate_parameters(
-            self::get_users_completion_parameters(),
+            self::get_user_grades_parameters(),
             array('time_modified' => $timemodified, 'id' => $id)
         );
 
         // Context validation.
         $context = context_user::instance($USER->id);
         self::validate_context($context);
-
         require_capability('moodle/user:viewdetails', $context);
 
         //Get the subquery to filter only records linked to the tenant of the current user 
