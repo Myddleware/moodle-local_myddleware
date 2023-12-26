@@ -76,13 +76,14 @@ class local_myddleware_external extends external_api {
         require_capability('moodle/user:viewdetails', $context);
 
         //Get the subquery to filter only records linked to the tenant of the current user 
-        $whereTenant = \tool_tenant\tenancy::get_users_subquery(false, true, "cmc.userid");
+		$whereTenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'cmc.userid'], '');
     
         // Prepare the query condition.
         if (!empty($id)) {
-            $where = " $whereTenant cmc.id = :id ";
+            $where = (!empty($whereTenant) ? $whereTenant : "")." cmc.id = :id ";
         } else {
-            $where = " $whereTenant cmc.timemodified > :timemodified ";
+            $where = (!empty($whereTenant) ? $whereTenant : "")." cmc.timemodified > :timemodified ";
         }
 
         // Retrieve token list (including linked users firstname/lastname and linked services name).
@@ -191,13 +192,14 @@ class local_myddleware_external extends external_api {
         require_capability('moodle/user:viewdetails', $context);
 
         //Get the subquery to filter only records linked to the tenant of the current user 
-        $whereTenant = \tool_tenant\tenancy::get_users_subquery(false, true, "la.userid");
+		$whereTenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'la.userid'], '');
         
         // Prepare the query condition.
         if (!empty($id)) {
-            $where = " $whereTenant la.id = :id ";
+            $where = (!empty($whereTenant) ? $whereTenant : "")." la.id = :id ";
         } else {
-            $where = " $whereTenant la.timeaccess > :timemodified ";
+            $where = (!empty($whereTenant) ? $whereTenant : "")." la.timeaccess > :timemodified ";
         }
 
         $sql = "
@@ -426,13 +428,14 @@ class local_myddleware_external extends external_api {
         require_capability('moodle/course:managegroups', $context);
         
         //Get the subquery to filter only records linked to the tenant of the current user 
-        $whereTenant = \tool_tenant\tenancy::get_users_subquery(false, true, "gm.userid");
+		$whereTenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'gm.userid'], '');
 
         // Prepare the query condition.
         if (!empty($id)) {
-            $where = " $whereTenant gm.id = :id ";
+            $where = (!empty($whereTenant) ? $whereTenant : "")." gm.id = :id ";
         } else {
-            $where = " $whereTenant gm.timeadded > :timemodified ";
+            $where = (!empty($whereTenant) ? $whereTenant : "")." gm.timeadded > :timemodified ";
         }
 
         $sql = "
@@ -513,13 +516,14 @@ class local_myddleware_external extends external_api {
         );
 
         //Get the subquery to filter only records linked to the tenant of the current user 
-        $whereTenant = \tool_tenant\tenancy::get_users_subquery(false, true, "{user}.id");
-        
+        $whereTenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, '{user}.id'], '');
+       
         // Prepare the query condition.
         if (!empty($id)) {
-            $where = " $whereTenant {user}.deleted = 0 AND {user}.id = :id ";
+			$where = (!empty($whereTenant) ? $whereTenant : "")." {user}.deleted = 0 AND {user}.id = :id ";
         } elseif (!empty($timemodified)) {
-            $where = " $whereTenant {user}.deleted = 0 AND {user}.timemodified > :timemodified ";
+            $where = (!empty($whereTenant) ? $whereTenant : "")." {user}.deleted = 0 AND {user}.timemodified > :timemodified ";           
         } else {
             return null;
         }
@@ -630,13 +634,14 @@ class local_myddleware_external extends external_api {
         );
 
         //Get the subquery to filter only records linked to the tenant of the current user 
-        $whereTenant = \tool_tenant\tenancy::get_users_subquery(false, true, "userid");
+		$whereTenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'userid'], '');
         
         // Prepare the query condition with the tenant
         if (!empty($id)) {
-            $where = " $whereTenant id = :id ";
+            $where = (!empty($whereTenant) ? $whereTenant : "")." id = :id ";
         } else {
-            $where = " $whereTenant timemodified > :timemodified ";
+            $where = (!empty($whereTenant) ? $whereTenant : "")." timemodified > :timemodified ";
         }
         
         $queryparams = array(
@@ -729,13 +734,14 @@ class local_myddleware_external extends external_api {
         );
         
         //Get the subquery to filter only records linked to the tenant of the current user 
-        $whereTenant = \tool_tenant\tenancy::get_users_subquery(false, true, "userid");
+		$whereTenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'userid'], '');
 
         // Prepare the query condition.
         if (!empty($id)) {
-            $where = " $whereTenant id = :id ";
+            $where = (!empty($whereTenant) ? $whereTenant : "")." id = :id ";
         } else {
-            $where = " $whereTenant timecompleted > :timemodified  OR reaggregate > 0 ";
+            $where = (!empty($whereTenant) ? $whereTenant : "")." timecompleted > :timemodified  OR reaggregate > 0 ";
         }
         $queryparams = array(
                             'id' => (!empty($params['id']) ? $params['id'] : ''),
@@ -839,14 +845,15 @@ class local_myddleware_external extends external_api {
         self::validate_context($context);
         require_capability('moodle/competency:usercompetencyview', $context);
         
-        //Get the subquery to filter only records linked to the tenant of the current user 
-        $whereTenant = \tool_tenant\tenancy::get_users_subquery(false, true, "userid");
+        //Get the subquery to filter only records linked to the tenant of the current user ;
+		$whereTenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'userid'], '');
 
         // Prepare the query condition.
         if (!empty($id)) {
-            $where = " $whereTenant id = :id ";
+            $where = (!empty($whereTenant) ? $whereTenant : "")." id = :id ";
         } else {
-            $where = " $whereTenant timemodified > :timemodified ";
+            $where = (!empty($whereTenant) ? $whereTenant : "")." timemodified > :timemodified ";
         }
         $queryparams = array(
                             'id' => (!empty($params['id']) ? $params['id'] : ''),
@@ -1084,13 +1091,14 @@ class local_myddleware_external extends external_api {
         require_capability('moodle/user:viewdetails', $context);
 
         //Get the subquery to filter only records linked to the tenant of the current user 
-        $whereTenant = \tool_tenant\tenancy::get_users_subquery(false, true, "grd.userid");
+		$whereTenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'grd.userid'], '');
 
         // Prepare the query condition.
         if (!empty($id)) {
-            $where = " $whereTenant grd.id = :id ";
+            $where = (!empty($whereTenant) ? $whereTenant : "")." grd.id = :id ";
         } else {
-            $where = " $whereTenant grd.timemodified > :timemodified ";
+            $where = (!empty($whereTenant) ? $whereTenant : "")." grd.timemodified > :timemodified ";
         }
         $queryparams = array(
                             'id' => (!empty($params['id']) ? $params['id'] : ''),
