@@ -268,7 +268,7 @@ class local_myddleware_external extends external_api {
      * @return the list of course.
      */
     public static function get_courses_by_date($timemodified, $id) {
-        global $DB, $CFG;
+        global $DB, $CFG, $USER;
         require_once($CFG->dirroot . "/course/externallib.php");
 
         // Parameter validation.
@@ -341,7 +341,7 @@ class local_myddleware_external extends external_api {
      * @return the list of group.
      */
     public static function get_groups_by_date($timemodified, $id) {
-        global $DB, $CFG;
+        global $DB, $CFG, $USER;
         require_once($CFG->dirroot . "/group/externallib.php");
 
         // Parameter validation.
@@ -514,7 +514,7 @@ class local_myddleware_external extends external_api {
      * @return the list of user.
      */
     public static function get_users_by_date($timemodified, $id) {
-        global $DB, $CFG;
+        global $DB, $CFG, $USER;
         require_once($CFG->dirroot . "/user/externallib.php");
 
         // Parameter validation.
@@ -637,7 +637,7 @@ class local_myddleware_external extends external_api {
      * @return the list of user enrolments.
      */
     public static function get_enrolments_by_date($timemodified, $id) {
-        global $DB, $CFG;
+        global $DB, $CFG, $USER;
         require_once($CFG->dirroot . "/course/externallib.php");
 
         // Parameter validation.
@@ -742,7 +742,7 @@ class local_myddleware_external extends external_api {
      * @return an array with the detail of each completion (id,userid,completionstate,timemodified,moduletype,instance,courseid).
      */
     public static function get_course_completion_by_date($timemodified, $id) {
-        global $DB, $CFG;
+        global $DB, $CFG, $USER;
         require_once($CFG->dirroot . "/course/externallib.php");
 
         // Parameter validation.
