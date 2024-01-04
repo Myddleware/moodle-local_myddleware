@@ -37,23 +37,23 @@ use core_privacy\local\metadata\collection;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements
-        // This plugin export data to external systems
+        // This plugin export data to external systems.
         \core_privacy\local\metadata\provider {
 
-    /* Returns metadata.
-    *
-    * @param collection $collection The initialised collection to add items to.
-    * @return collection A listing of user data stored through this system.
-    */
+    /** Returns metadata.
+     *
+     * @param collection $collection The initialised collection to add items to.
+     * @return collection A listing of user data stored through this system.
+     */
     public static function get_metadata(collection $collection): collection {
         // Personal information has to be passed to Myddleware.
         // This includes the user email, fullname...
         $collection->add_external_location_link('myddleware', [
-                'userid' => 'privacy:metadata:myddleware:userid',
-                'fullname' => 'privacy:metadata:myddleware:fullname',
-                'email' => 'privacy:metadata:myddleware:email',
-                'username' => 'privacy:metadata:myddleware:username',
-                'id' => 'privacy:metadata:myddleware:id',
+            'userid' => 'privacy:metadata:myddleware:userid',
+            'fullname' => 'privacy:metadata:myddleware:fullname',
+            'email' => 'privacy:metadata:myddleware:email',
+            'username' => 'privacy:metadata:myddleware:username',
+            'id' => 'privacy:metadata:myddleware:id',
             'password' => 'privacy:metadata:myddleware:password',
             'createpassword' => 'privacy:metadata:myddleware:createpassword',
             'firstname' => 'privacy:metadata:myddleware:firstname',
@@ -72,7 +72,6 @@ class provider implements
             'lastnamephonetic' => 'privacy:metadata:myddleware:lastnamephonetic',
             'middlename' => 'privacy:metadata:myddleware:middlename',
             'alternatename' => 'privacy:metadata:myddleware:alternatename',
-            'fullname' => 'privacy:metadata:myddleware:fullname',
             'address' => 'privacy:metadata:myddleware:address',
             'phone1' => 'privacy:metadata:myddleware:phone1',
             'phone2' => 'privacy:metadata:myddleware:phone2',
@@ -95,9 +94,7 @@ class provider implements
             'preferences' => 'privacy:metadata:myddleware:preferences',
             'customfields' => 'privacy:metadata:myddleware:customfields',
             'timemodified' => 'privacy:metadata:myddleware:timemodified',
-
             ], 'privacy:metadata:myddleware');
-    
         return $collection;
     }
 }
