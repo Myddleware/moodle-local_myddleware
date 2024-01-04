@@ -22,6 +22,7 @@
  * @author     Myddleware ltd
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace local_myddleware;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -34,10 +35,22 @@ use myddleware\privacy\provider;
 use core_privacy\local\metadata\collection;
 use core_privacy\local\metadata\types\external_location;
 
-class provider_test extends advanced_testcase
-{
-    public function test_get_metadata()
-    {
+/**
+ * Myddleware provider test
+ *
+ * @package    local_myddleware
+ * @category   test
+ * @copyright  2017 Myddleware
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @coversNothing
+ */
+class provider_test extends advanced_testcase {
+
+    /**
+     * Test get_metadata function.
+     * Function that test metadata.
+     */
+    public function test_get_metadata() {
         $this->resetAfterTest();
         $provider = new provider();
         $collection = new collection('local_myddleware');
