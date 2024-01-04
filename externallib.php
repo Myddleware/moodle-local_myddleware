@@ -28,7 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . "/externallib.php");
 
 use core_competency\user_competency;
-use core_reportbuilder\local\helpers\database;
 
 /**
  * Myddleware external functions
@@ -1029,11 +1028,11 @@ class local_myddleware_external extends external_api {
                 modules.name as modulename,
                 course.fullname as coursemodulename
             FROM {competency_modulecomp} competency_modulecomp
-                INNER JOIN {course_modules} course_modules
+                LEFT OUTER JOIN {course_modules} course_modules
                     ON competency_modulecomp.cmid = course_modules.id
-                    INNER JOIN {modules} modules
+                    LEFT OUTER JOIN {modules} modules
                         ON course_modules.module = modules.id
-                    INNER JOIN {course} course
+                    LEFT OUTER JOIN {course} course
                         ON course_modules.course = course.id
             WHERE
                 ".$where."
@@ -1164,7 +1163,7 @@ class local_myddleware_external extends external_api {
             LEFT OUTER JOIN {course} crs
                 ON itm.courseid = crs.id
             WHERE
-                $tenantcondition ".$where."
+                ".$where."
             ORDER BY grd.timemodified ASC, grd.id ASC
                 ";
         $rs = $DB->get_recordset_sql($sql, $queryparams);
