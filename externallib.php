@@ -720,6 +720,99 @@ class local_myddleware_external extends external_api {
         );
     }
 
+	/**
+     * Returns description of method parameters.
+     * @return external_function_parameters.
+     */
+    public static function search_enrolment_parameters() {
+        return new external_function_parameters(
+            [
+                'userid' => new external_value(PARAM_INT, get_string('userid', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'courseid' => new external_value(PARAM_INT, get_string('courseid', 'local_myddleware'), VALUE_DEFAULT, 0),
+            ]
+        );
+    }
+
+    /**
+     * This function search the enrolments using role_id, course_id and user_id
+     * @param int $timemodified
+     * @param int $id
+     * @return the list of user enrolments.
+     */
+    public static function search_enrolment($userid, $courseid) {
+        global $DB, $CFG, $USER;
+        require_once($CFG->dirroot . "/course/externallib.php");
+
+        // Parameter validation.
+        $params = self::validate_parameters(
+            self::search_enrolment_parameters(),
+            ['userid' => $userid, 'courseid' => $courseid]
+        );
+
+        // Context validation.
+        $context = context_user::instance($USER->id);
+        self::validate_context($context);
+        require_capability('enrol/manual:manage', $context);
+
+        // Get the subquery to filter only records linked to the tenant of the current user.
+        $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'ue.userid'], '');
+
+        // Prepare the query condition with the tenant.
+        $where = (!empty($wheretenant) ? $wheretenant : "")." ue.userid = :userid AND en.courseid = :courseid ";
+
+		// Get the user enrolment id.
+        $sql = "
+            SELECT ue.id
+            FROM {enrol} en
+				INNER JOIN {user_enrolments} ue
+					ON en.id = ue.enrolid
+            WHERE ".$where;
+        $queryparams = [
+                            'userid' => $params['userid'],
+                            'courseid' => $params['courseid'],
+                        ];
+        $rs = $DB->get_recordset_sql($sql, $queryparams);
+
+		// If a result is found, we use the method get_enrolments_by_date to return the result. 
+		if (!empty($rs)) {
+            foreach ($rs as $enrol) {
+                foreach ($enrol as $key => $value) {
+					if (
+							$key == 'id'
+						AND !empty($value)
+					) {
+						return local_myddleware_external::get_enrolments_by_date(0, $value);
+					}
+                }
+            }
+        }
+		return null;
+    }
+
+
+    /**
+     * Returns description of method result value.
+     * @return external_description.
+     */
+    public static function search_enrolment_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                [
+                    'id' => new external_value(PARAM_INT, get_string('return_id', 'local_myddleware')),
+                    'userid' => new external_value(PARAM_INT, get_string('return_userid', 'local_myddleware')),
+                    'courseid' => new external_value(PARAM_INT, get_string('return_courseid', 'local_myddleware')),
+                    'roleid' => new external_value(PARAM_INT, get_string('return_roleid', 'local_myddleware')),
+                    'status' => new external_value(PARAM_TEXT, get_string('return_status', 'local_myddleware')),
+                    'enrol' => new external_value(PARAM_TEXT, get_string('return_enrol', 'local_myddleware')),
+                    'timestart' => new external_value(PARAM_INT, get_string('return_timestart', 'local_myddleware')),
+                    'timeend' => new external_value(PARAM_INT, get_string('return_timeend', 'local_myddleware')),
+                    'timecreated' => new external_value(PARAM_INT, get_string('return_timecreated', 'local_myddleware')),
+                    'timemodified' => new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware')),
+                ]
+            )
+        );
+    }
 
     /**
      * Returns description of method parameters.
