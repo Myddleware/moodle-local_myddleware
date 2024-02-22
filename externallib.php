@@ -44,7 +44,7 @@ class local_myddleware_external extends external_api {
      * Returns description of method parameters.
      * @return external_function_parameters.
      */
-    public static function get_users_completion_parameters() {
+    public static function get_users_completion_parameters () {
         return new external_function_parameters(
             [
                 'time_modified' => new external_value(
@@ -58,10 +58,10 @@ class local_myddleware_external extends external_api {
      * This function search completion created after the date $timemodified in parameters.
      * @param int $timemodified
      * @param int $id
-     * @return an array with the detail of each completion (id,userid,completionstate,timemodified,moduletype,instance,courseid).
+     * @return array with the detail of each completion (id,userid,completionstate,timemodified,moduletype,instance,courseid).
      */
     public static function get_users_completion($timemodified, $id) {
-        global $USER, $DB;
+        global $DB;
 
         // Parameter validation.
         $params = self::validate_parameters(
@@ -70,9 +70,8 @@ class local_myddleware_external extends external_api {
         );
 
         // Context validation.
-        $context = context_user::instance($USER->id);
+        $context = context_system::instance();
         self::validate_context($context);
-        require_capability('report/progress:view', $context);
 
         // Get the subquery to filter only records linked to the tenant of the current user.
         $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
@@ -116,6 +115,12 @@ class local_myddleware_external extends external_api {
             foreach ($rs as $completionrecords) {
                 foreach ($completionrecords as $key => $value) {
                     $completion[$key] = $value;
+                }
+
+                // Security check to validate the course
+                list($courses, $warnings) = core_external\util::validate_courses([$completion['courseid']], array(), true);
+                if (empty($courses[$completion['courseid']])){
+                    continue;
                 }
                 // Add information about the module.
                 $modinfo = get_fast_modinfo($completion['courseid']);
@@ -174,10 +179,10 @@ class local_myddleware_external extends external_api {
      * Only access after the $timemodified are returned.
      * @param int $timemodified
      * @param int $id
-     * @return an array with the detail of each access (id, userid, access time and courseid).
+     * @return array with the detail of each access (id, userid, access time and courseid).
      */
     public static function get_users_last_access($timemodified, $id) {
-        global $USER, $DB;
+        global $DB;
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_users_last_access_parameters(),
@@ -185,7 +190,7 @@ class local_myddleware_external extends external_api {
         );
 
         // Context validation.
-        $context = context_user::instance($USER->id);
+        $context = context_system::instance();
         self::validate_context($context);
         require_capability('moodle/user:viewdetails', $context);
 
@@ -265,10 +270,10 @@ class local_myddleware_external extends external_api {
      * This function search the courses created or modified after after the datime $timemodified.
      * @param int $timemodified
      * @param int $id
-     * @return the list of course.
+     * @return array the list of course.
      */
     public static function get_courses_by_date($timemodified, $id) {
-        global $DB, $CFG, $USER;
+        global $DB, $CFG;
         require_once($CFG->dirroot . "/course/externallib.php");
 
         // Parameter validation.
@@ -278,9 +283,8 @@ class local_myddleware_external extends external_api {
         );
 
         // Context validation.
-        $context = context_user::instance($USER->id);
+        $context = context_system::instance();
         self::validate_context($context);
-        require_capability('moodle/course:view', $context);
 
         // Prepare the query condition.
         if (!empty($id)) {
@@ -295,6 +299,8 @@ class local_myddleware_external extends external_api {
 
         // Select the courses modified after the datime $timemodified. We select them order by timemodified ascending.
         $selectedcourses = $DB->get_records_select('course', $where, $queryparams, ' timemodified ASC ', 'id');
+        // Security check to validate the course
+        list($selectedcourses, $warnings) = core_external\util::validate_courses(array_keys($selectedcourses), $selectedcourses, true);
 
         $returnedcourses = [];
         if (!empty($selectedcourses)) {
@@ -338,10 +344,10 @@ class local_myddleware_external extends external_api {
      * This function search the groups created or modified after after the datime $timemodified.
      * @param int $timemodified
      * @param int $id
-     * @return the list of group.
+     * @return array the list of group.
      */
     public static function get_groups_by_date($timemodified, $id) {
-        global $DB, $CFG, $USER;
+        global $DB, $CFG;
         require_once($CFG->dirroot . "/group/externallib.php");
 
         // Parameter validation.
@@ -351,9 +357,8 @@ class local_myddleware_external extends external_api {
         );
 
         // Context validation.
-        $context = context_user::instance($USER->id);
+        $context = context_system::instance();
         self::validate_context($context);
-        require_capability('moodle/course:view', $context);
 
         // Prepare the query condition.
         if (!empty($id)) {
@@ -420,10 +425,10 @@ class local_myddleware_external extends external_api {
      * Only group members after the $timeadded are returned.
      * @param int $timemodified
      * @param int $id
-     * @return an array with the detail of each group members (id, groupid, time added and userid).
+     * @return array with the detail of each group members (id, groupid, time added and userid).
      */
     public static function get_group_members_by_date($timemodified, $id) {
-        global $USER, $DB;
+        global $DB;
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_users_last_access_parameters(),
@@ -431,9 +436,8 @@ class local_myddleware_external extends external_api {
         );
 
         // Context validation.
-        $context = context_user::instance($USER->id);
+        $context = context_system::instance();
         self::validate_context($context);
-        require_capability('moodle/course:managegroups', $context);
 
         // Get the subquery to filter only records linked to the tenant of the current user.
         $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
@@ -511,10 +515,10 @@ class local_myddleware_external extends external_api {
      * This function search the users created or modified after after the datime $timemodified.
      * @param int $timemodified
      * @param int $id
-     * @return the list of user.
+     * @return array the list of user.
      */
     public static function get_users_by_date($timemodified, $id) {
-        global $DB, $CFG, $USER;
+        global $DB, $CFG;
         require_once($CFG->dirroot . "/user/externallib.php");
 
         // Parameter validation.
@@ -524,7 +528,7 @@ class local_myddleware_external extends external_api {
         );
 
         // Context validation.
-        $context = context_user::instance($USER->id);
+        $context = context_system::instance();
         self::validate_context($context);
         require_capability('moodle/user:viewdetails', $context);
 
@@ -634,10 +638,10 @@ class local_myddleware_external extends external_api {
      * This function search the enrolments modified after after the datime $timemodified.
      * @param int $timemodified
      * @param int $id
-     * @return the list of user enrolments.
+     * @return array the list of user enrolments.
      */
     public static function get_enrolments_by_date($timemodified, $id) {
-        global $DB, $CFG, $USER;
+        global $DB, $CFG;
         require_once($CFG->dirroot . "/course/externallib.php");
 
         // Parameter validation.
@@ -647,7 +651,7 @@ class local_myddleware_external extends external_api {
         );
 
         // Context validation.
-        $context = context_user::instance($USER->id);
+        $context = context_system::instance();
         self::validate_context($context);
         require_capability('enrol/manual:manage', $context);
 
@@ -676,6 +680,11 @@ class local_myddleware_external extends external_api {
                 $instance = $DB->get_record('enrol', ['id' => $userenrolment->enrolid], '*', MUST_EXIST);
                 // Prepare result.
                 if (!empty($instance)) {
+                    // Security check to validate the course
+                    list($courses, $warnings) = core_external\util::validate_courses([$instance->courseid], array(), true);
+                    if (empty($courses)) {
+                        continue;
+                    }
                     $userenroldata = [
                         'id' => $userenrolment->id,
                         'userid' => $userenrolment->userid,
@@ -720,7 +729,7 @@ class local_myddleware_external extends external_api {
         );
     }
 
-	/**
+    /**
      * Returns description of method parameters.
      * @return external_function_parameters.
      */
@@ -737,10 +746,10 @@ class local_myddleware_external extends external_api {
      * This function search the enrolments using role_id, course_id and user_id
      * @param int $timemodified
      * @param int $id
-     * @return the list of user enrolments.
+     * @return array the list of user enrolments.
      */
     public static function search_enrolment($userid, $courseid) {
-        global $DB, $CFG, $USER;
+        global $DB, $CFG;
         require_once($CFG->dirroot . "/course/externallib.php");
 
         // Parameter validation.
@@ -750,7 +759,7 @@ class local_myddleware_external extends external_api {
         );
 
         // Context validation.
-        $context = context_user::instance($USER->id);
+        $context = context_system::instance();
         self::validate_context($context);
         require_capability('enrol/manual:manage', $context);
 
@@ -761,12 +770,12 @@ class local_myddleware_external extends external_api {
         // Prepare the query condition with the tenant.
         $where = (!empty($wheretenant) ? $wheretenant : "")." ue.userid = :userid AND en.courseid = :courseid ";
 
-		// Get the user enrolment id.
+        // Get the user enrolment id.
         $sql = "
             SELECT ue.id
             FROM {enrol} en
-				INNER JOIN {user_enrolments} ue
-					ON en.id = ue.enrolid
+                INNER JOIN {user_enrolments} ue
+                    ON en.id = ue.enrolid
             WHERE ".$where;
         $queryparams = [
                             'userid' => $params['userid'],
@@ -774,20 +783,20 @@ class local_myddleware_external extends external_api {
                         ];
         $rs = $DB->get_recordset_sql($sql, $queryparams);
 
-		// If a result is found, we use the method get_enrolments_by_date to return the result. 
-		if (!empty($rs)) {
+        // If a result is found, we use the method get_enrolments_by_date to return the result. 
+        if (!empty($rs)) {
             foreach ($rs as $enrol) {
                 foreach ($enrol as $key => $value) {
-					if (
-							$key == 'id'
-						AND !empty($value)
-					) {
-						return local_myddleware_external::get_enrolments_by_date(0, $value);
-					}
+                    if (
+                            $key == 'id'
+                        AND !empty($value)
+                    ) {
+                        return local_myddleware_external::get_enrolments_by_date(0, $value);
+                    }
                 }
             }
         }
-		return null;
+        return null;
     }
 
 
@@ -832,10 +841,10 @@ class local_myddleware_external extends external_api {
      * This function search completion created after the date $timemodified in parameters.
      * @param int $timemodified
      * @param int $id
-     * @return an array with the detail of each completion (id,userid,completionstate,timemodified,moduletype,instance,courseid).
+     * @return array with the detail of each completion (id,userid,completionstate,timemodified,moduletype,instance,courseid).
      */
     public static function get_course_completion_by_date($timemodified, $id) {
-        global $DB, $CFG, $USER;
+        global $DB, $CFG;
         require_once($CFG->dirroot . "/course/externallib.php");
 
         // Parameter validation.
@@ -845,9 +854,8 @@ class local_myddleware_external extends external_api {
         );
 
         // Context validation.
-        $context = context_user::instance($USER->id);
+        $context = context_system::instance();
         self::validate_context($context);
-        require_capability('report/completion:view', $context);
 
         // Get the subquery to filter only records linked to the tenant of the current user.
         $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
@@ -866,6 +874,11 @@ class local_myddleware_external extends external_api {
         $returncompletions = [];
         // Select enrolment modified after the date in input.
         $selectedcompletions = $DB->get_records_select('course_completions', $where, $queryparams, ' timecompleted ASC ', '*');
+
+        // Security check to validate the courses
+        $courseids = array_unique(array_column($selectedcompletions, 'course'));
+        list($courses, $warnings) = core_external\util::validate_courses($courseids, array(), true);
+
         if (!empty($selectedcompletions)) {
             // Date ref management : date ref is usually the timecompleted.
             // But if reaggregate is not empty we have to keep the smaller value of this field.
@@ -875,6 +888,10 @@ class local_myddleware_external extends external_api {
             // So we have to keep reaggregate as the reference date.
             // Because we have to read the completion after the next cron job runs.
             foreach ($selectedcompletions as $selectedcompletion) {
+                // Security check to validate the courses
+                if (empty($courses[$selectedcompletion->course])) {
+                    continue;
+                }
                 // Keep the smaller value of reaggregateif it exists.
                 if ($selectedcompletion->reaggregate > 0 &&
                    ($selectedcompletion->reaggregate < $daterefoverride || $daterefoverride == -1)) {
@@ -884,6 +901,10 @@ class local_myddleware_external extends external_api {
 
             // Prepare result.
             foreach ($selectedcompletions as $selectedcompletion) {
+                // Security check to validate the courses
+                if (empty($courses[$selectedcompletion->course])) {
+                    continue;
+                }
                 // We keep only completion with timecompleted not null.
                 // Ssome completion could have reaggregate not null and timecompleted null.
                 if (empty($selectedcompletion->timecompleted)) {
@@ -947,10 +968,10 @@ class local_myddleware_external extends external_api {
      * This function search the user competencies created or modified after after the datime $timemodified.
      * @param int $timemodified
      * @param int $id
-     * @return the list of user compentencies.
+     * @return array the list of user compentencies.
      */
     public static function get_user_compentencies_by_date($timemodified, $id) {
-        global $USER, $DB;
+        global $DB;
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_user_compentencies_by_date_parameters(),
@@ -958,7 +979,7 @@ class local_myddleware_external extends external_api {
         );
 
         // Context validation.
-        $context = context_user::instance($USER->id);
+        $context = context_system::instance();
         self::validate_context($context);
         require_capability('moodle/competency:usercompetencyview', $context);
 
@@ -1082,10 +1103,10 @@ class local_myddleware_external extends external_api {
      * This function search the user competencies created or modified after after the datime $timemodified.
      * @param int $timemodified
      * @param int $id
-     * @return the list of competency module completions
+     * @return array the list of competency module completions
      */
     public static function get_competency_module_completion_by_date($timemodified, $id) {
-        global $USER, $DB;
+        global $DB;
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_user_compentencies_by_date_parameters(),
@@ -1093,7 +1114,7 @@ class local_myddleware_external extends external_api {
         );
 
         // Context validation.
-        $context = context_user::instance($USER->id);
+        $context = context_system::instance();
         self::validate_context($context);
         require_capability('moodle/competency:usercompetencyview', $context);
 
@@ -1138,8 +1159,21 @@ class local_myddleware_external extends external_api {
         $competencymodulecompletions = [];
         if (!empty($rs)) {
             foreach ($rs as $competencymodulecompletionrecords) {
+                $courseError = false;
                 foreach ($competencymodulecompletionrecords as $key => $value) {
+                    // Validate course
+                    if ($key == 'courseid') {
+                        list($courses, $warnings) = core_external\util::validate_courses([$value], array(), true);
+                        if (empty($courses[$value])){
+                            $courseError = true;
+                            break;
+                        }
+                    }
                     $competencymodulecompletion[$key] = $value;
+                }
+                // If error we go to the next record
+                if ($courseError) {
+                    continue;
                 }
                 $competencymodulecompletions[] = $competencymodulecompletion;
             }
@@ -1190,10 +1224,10 @@ class local_myddleware_external extends external_api {
      * This function search completion created after the date $timemodified in parameters.
      * @param int $timemodified
      * @param int $id
-     * @return an array with the detail of each grades.
+     * @return array an array with the detail of each grades.
      */
     public static function get_user_grades($timemodified, $id) {
-        global $USER, $DB;
+        global $DB;
 
         // Parameter validation.
         $params = self::validate_parameters(
@@ -1202,9 +1236,9 @@ class local_myddleware_external extends external_api {
         );
 
         // Context validation.
-        $context = context_user::instance($USER->id);
+        $context = context_system::instance();
         self::validate_context($context);
-        require_capability('moodle/user:viewdetails', $context);
+        require_capability('moodle/grade:viewall', $context);
 
         // Get the subquery to filter only records linked to the tenant of the current user.
         $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
