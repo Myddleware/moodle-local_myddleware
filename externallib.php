@@ -44,7 +44,7 @@ class local_myddleware_external extends external_api {
      * Returns description of method parameters.
      * @return external_function_parameters.
      */
-    public static function get_users_completion_parameters () {
+    public static function get_users_completion_parameters() {
         return new external_function_parameters(
             [
                 'time_modified' => new external_value(
@@ -117,11 +117,11 @@ class local_myddleware_external extends external_api {
                     $completion[$key] = $value;
                 }
 
-                // Security check to validate the course
-                // list($courses, $warnings) = core_external\util::validate_courses([$completion['courseid']], array(), true);
-                // if (empty($courses[$completion['courseid']])){
-                    // continue;
-                // }
+                // Security check to validate the course.
+                list($courses, $warnings) = core_external\util::validate_courses([$completion['courseid']], [], true);
+                if (empty($courses[$completion['courseid']])) {
+                    continue;
+                }
                 // Add information about the module.
                 $modinfo = get_fast_modinfo($completion['courseid']);
                 $cm = $modinfo->get_cm($completion['coursemoduleid']);
@@ -299,8 +299,9 @@ class local_myddleware_external extends external_api {
 
         // Select the courses modified after the datime $timemodified. We select them order by timemodified ascending.
         $selectedcourses = $DB->get_records_select('course', $where, $queryparams, ' timemodified ASC ', 'id');
-        // Security check to validate the course
-        // list($selectedcourses, $warnings) = core_external\util::validate_courses(array_keys($selectedcourses), $selectedcourses, true);
+        // Security check to validate the course.
+        list($selectedcourses, $warnings) = core_external\util::validate_courses(
+            array_keys($selectedcourses), $selectedcourses, true);
 
         $returnedcourses = [];
         if (!empty($selectedcourses)) {
@@ -680,11 +681,11 @@ class local_myddleware_external extends external_api {
                 $instance = $DB->get_record('enrol', ['id' => $userenrolment->enrolid], '*', MUST_EXIST);
                 // Prepare result.
                 if (!empty($instance)) {
-                    // Security check to validate the course
-                    // list($courses, $warnings) = core_external\util::validate_courses([$instance->courseid], array(), true);
-                    // if (empty($courses)) {
-                        // continue;
-                    // }
+                    // Security check to validate the course.
+                    list($courses, $warnings) = core_external\util::validate_courses([$instance->courseid], [], true);
+                    if (empty($courses)) {
+                        continue;
+                    }
                     $userenroldata = [
                         'id' => $userenrolment->id,
                         'userid' => $userenrolment->userid,
@@ -744,8 +745,8 @@ class local_myddleware_external extends external_api {
 
     /**
      * This function search the enrolments using role_id, course_id and user_id
-     * @param int $timemodified
-     * @param int $id
+     * @param int $userid
+     * @param int $courseid
      * @return array the list of user enrolments.
      */
     public static function search_enrolment($userid, $courseid) {
@@ -783,15 +784,15 @@ class local_myddleware_external extends external_api {
                         ];
         $rs = $DB->get_recordset_sql($sql, $queryparams);
 
-        // If a result is found, we use the method get_enrolments_by_date to return the result. 
+        // If a result is found, we use the method get_enrolments_by_date to return the result.
         if (!empty($rs)) {
             foreach ($rs as $enrol) {
                 foreach ($enrol as $key => $value) {
                     if (
                             $key == 'id'
-                        AND !empty($value)
+                        && !empty($value)
                     ) {
-                        return local_myddleware_external::get_enrolments_by_date(0, $value);
+                        return self::get_enrolments_by_date(0, $value);
                     }
                 }
             }
@@ -875,9 +876,9 @@ class local_myddleware_external extends external_api {
         // Select enrolment modified after the date in input.
         $selectedcompletions = $DB->get_records_select('course_completions', $where, $queryparams, ' timecompleted ASC ', '*');
 
-        // Security check to validate the courses
-        // $courseids = array_unique(array_column($selectedcompletions, 'course'));
-        // list($courses, $warnings) = core_external\util::validate_courses($courseids, array(), true);
+        // Security check to validate the courses.
+        $courseids = array_unique(array_column($selectedcompletions, 'course'));
+        list($courses, $warnings) = core_external\util::validate_courses($courseids, [], true);
 
         if (!empty($selectedcompletions)) {
             // Date ref management : date ref is usually the timecompleted.
@@ -888,10 +889,10 @@ class local_myddleware_external extends external_api {
             // So we have to keep reaggregate as the reference date.
             // Because we have to read the completion after the next cron job runs.
             foreach ($selectedcompletions as $selectedcompletion) {
-                // Security check to validate the courses
-                // if (empty($courses[$selectedcompletion->course])) {
-                    // continue;
-                // }
+                // Security check to validate the courses.
+                if (empty($courses[$selectedcompletion->course])) {
+                    continue;
+                }
                 // Keep the smaller value of reaggregateif it exists.
                 if ($selectedcompletion->reaggregate > 0 &&
                    ($selectedcompletion->reaggregate < $daterefoverride || $daterefoverride == -1)) {
@@ -901,10 +902,10 @@ class local_myddleware_external extends external_api {
 
             // Prepare result.
             foreach ($selectedcompletions as $selectedcompletion) {
-                // Security check to validate the courses
-                // if (empty($courses[$selectedcompletion->course])) {
-                    // continue;
-                // }
+                // Security check to validate the courses.
+                if (empty($courses[$selectedcompletion->course])) {
+                    continue;
+                }
                 // We keep only completion with timecompleted not null.
                 // Ssome completion could have reaggregate not null and timecompleted null.
                 if (empty($selectedcompletion->timecompleted)) {
@@ -1159,22 +1160,22 @@ class local_myddleware_external extends external_api {
         $competencymodulecompletions = [];
         if (!empty($rs)) {
             foreach ($rs as $competencymodulecompletionrecords) {
-                $courseError = false;
+                $courseerror = false;
                 foreach ($competencymodulecompletionrecords as $key => $value) {
-                    // Validate course
-                    // if ($key == 'courseid') {
-                        // list($courses, $warnings) = core_external\util::validate_courses([$value], array(), true);
-                        // if (empty($courses[$value])){
-                            // $courseError = true;
-                            // break;
-                        // }
-                    // }
+                    // Validate course.
+                    if ($key == 'courseid') {
+                        list($courses, $warnings) = core_external\util::validate_courses([$value], [], true);
+                        if (empty($courses[$value])) {
+                            $courseerror = true;
+                            break;
+                        }
+                    }
                     $competencymodulecompletion[$key] = $value;
                 }
-                // If error we go to the next record
-                // if ($courseError) {
-                    // continue;
-                // }
+                // If error we go to the next record.
+                if ($courseerror) {
+                    continue;
+                }
                 $competencymodulecompletions[] = $competencymodulecompletion;
             }
         }
