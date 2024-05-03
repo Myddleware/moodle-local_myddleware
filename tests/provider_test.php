@@ -44,13 +44,14 @@ use core_privacy\local\metadata\types\external_location;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversNothing
  */
-class provider_test extends advanced_testcase {
+final class provider_test extends advanced_testcase {
 
     /**
      * Test get_metadata function.
      * Function that test metadata.
+     * @return bool
      */
-    public function test_get_metadata() {
+    public function test_get_metadata(): void {
         $this->resetAfterTest();
         $provider = new provider();
         $collection = new collection('local_myddleware');

@@ -76,6 +76,13 @@ $functions = [
             'description' => 'Return enrolment list',
             'type'        => 'read',
     ],
+    'local_myddleware_search_enrolment' => [
+            'classname'   => 'local_myddleware_external',
+            'methodname'  => 'search_enrolment',
+            'classpath'   => 'local/myddleware/externallib.php',
+            'description' => 'Return enrolment list',
+            'type'        => 'read',
+    ],
     'local_myddleware_get_course_completion_by_date' => [
             'classname'   => 'local_myddleware_external',
             'methodname'  => 'get_course_completion_by_date',
@@ -118,6 +125,7 @@ $services = [
                         'local_myddleware_get_group_members_by_date',
                         'local_myddleware_get_users_by_date',
                         'local_myddleware_get_enrolments_by_date',
+                        'local_myddleware_search_enrolment',
                         'local_myddleware_get_course_completion_by_date',
                         'local_myddleware_get_user_compentencies_by_date',
                         'local_myddleware_get_competency_module_completion_by_date',
