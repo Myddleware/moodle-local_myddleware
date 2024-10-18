@@ -625,6 +625,200 @@ class local_myddleware_external extends external_api {
      * Returns description of method parameters.
      * @return external_function_parameters.
      */
+    public static function get_users_statistics_by_date_parameters() {
+        return new external_function_parameters(
+            [
+                'time_modified' => new external_value(
+                    PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
+            ]
+        );
+    }
+
+    /**
+     * This function search completion created after the date $timemodified in parameters.
+     * @param int $timemodified
+     * @param int $id
+     * @return array an array with the detail of each grades.
+     */
+    public static function get_users_statistics_by_date($timemodified, $id) {
+        global $DB;
+        $returnedusers = [];
+        $users = [];
+            
+        // Parameter validation.
+        $params = self::validate_parameters(
+            self::get_user_grades_parameters(),
+            ['time_modified' => $timemodified, 'id' => $id]
+        );
+        
+        // Context validation.
+        $context = context_system::instance();
+        self::validate_context($context);
+        require_capability('moodle/user:viewdetails', $context);
+        
+        // Search every last access record
+        // Get the subquery to filter only records linked to the tenant of the current user.
+        $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'la.userid'], '');
+        // Prepare the query condition.
+        if (!empty($id)) {
+            $where = (!empty($wheretenant) ? $wheretenant : "")." la.userid = :id ";
+        } else {
+            $where = (!empty($wheretenant) ? $wheretenant : "")." la.timeaccess > :timemodified ";
+        }
+        $sqllastaccess = "SELECT la.userid, la.timeaccess FROM {user_lastaccess} la WHERE ".$where;
+        $queryparamslastaccess = [
+                            'id' => (!empty($params['id']) ? $params['id'] : ''),
+                            'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : ''),
+                        ];
+        $urserlastaccess = $DB->get_recordset_sql($sqllastaccess, $queryparamslastaccess);
+        if (!empty($urserlastaccess)) {
+            foreach ($urserlastaccess as $urserla) {
+                // Change the result only if the user isn't already in the array or if its reference date is greater than the one in the results
+                if (
+                        !array_key_exists($urserla->userid,$users)
+                     OR (
+                            array_key_exists($urserla->userid,$users)
+                        AND $users[$urserla->userid] < $urserla->timeaccess
+                    )
+                ) {
+                    $users[$urserla->userid] = $urserla->timeaccess;
+                }
+            }
+        }
+        // Search every user log
+        $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'log.userid'], '');
+        // Prepare the query condition.
+        if (!empty($id)) {
+            $where = (!empty($wheretenant) ? $wheretenant : "")." log.userid = :id ";
+        } else {
+            $where = (!empty($wheretenant) ? $wheretenant : "")." log.timecreated > :timemodified ";
+        }
+        $sqluserlog = "SELECT log.userid, log.timecreated FROM {logstore_standard_log} log 
+                        WHERE 
+                                action IN ('viewed','loggedin')
+                            AND ".$where;
+        $queryparamsuserlog = [
+                            'id' => (!empty($params['id']) ? $params['id'] : ''),
+                            'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : ''),
+                        ];
+        $urserlog = $DB->get_recordset_sql($sqluserlog, $queryparamsuserlog);
+        if (!empty($urserlog)) {
+            foreach ($urserlog as $urserlo) {
+                // Change the result only if the user isn't already in the array or if its reference date is greater than the one in the results
+                if (
+                        !array_key_exists($urserlo->userid,$users)
+                     OR (
+                            array_key_exists($urserlo->userid,$users)
+                        AND $users[$urserlo->userid] < $urserlo->timecreated
+                    )
+                ) {
+                    $users[$urserlo->userid] = $urserlo->timecreated;
+                }
+            }
+        }
+        // Search every quizz attempts
+        $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'qa.userid'], '');
+        // Prepare the query condition.
+        if (!empty($id)) {
+            $where = (!empty($wheretenant) ? $wheretenant : "")." qa.userid = :id ";
+        } else {
+            $where = (!empty($wheretenant) ? $wheretenant : "")." qa.timemodified > :timemodified ";
+        }
+        $sqlquizattempt = "SELECT qa.userid, qa.timemodified FROM {quiz_attempts} qa WHERE ".$where;
+        $queryparamsquizattemp = [
+                            'id' => (!empty($params['id']) ? $params['id'] : ''),
+                            'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : ''),
+                        ];
+        $urserquizattemp = $DB->get_recordset_sql($sqlquizattempt, $queryparamsquizattemp);
+        if (!empty($urserquizattemp)) {
+            foreach ($urserquizattemp as $urserqa) {
+                // Change the result only if the user isn't already in the array or if its reference date is greater than the one in the results
+                if (
+                        !array_key_exists($urserqa->userid,$users)
+                     OR (
+                            array_key_exists($urserqa->userid,$users)
+                        AND $users[$urserqa->userid] < $urserqa->timemodified
+                    )
+                ) {
+                    $users[$urserqa->userid] = $urserqa->timemodified;
+                }
+            }
+        }            
+
+        if (!empty($users)) {
+            // Add statistics for each users.
+             // Get the subquery to filter only records linked to the tenant of the current user.
+            $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+                [true, true, '{user}.id'], '');
+            // Prepare the query condition.
+            $where = (!empty($wheretenant) ? $wheretenant : "")." {user}.deleted = 0 AND {user}.id = :id ";
+
+            foreach($users as $userId => $usertimemodified) {
+                // Get the detail of each user
+                $queryparams = ['id' => $userId];
+                $userRes = $DB->get_records_select('user', $where, $queryparams, '', '*');
+                if (!empty($userRes)) {
+                    foreach ($userRes as $key => $user) {
+                        $userId = $user->id;
+                        $userStat['id'] = $userId;
+                        $userStat['username'] = $user->username;
+                        $userStat['email'] = $user->email;
+                        $userStat['lastname'] = $user->lastname;
+                        $userStat['timemodified'] = $usertimemodified;
+                        $userStat['lastaccess'] = $user->lastaccess;
+                        // Get the log stats
+                        $totallogins = $DB->get_field('logstore_standard_log', 'count(id)', ['action' => 'loggedin', 'userid' => $userId]);
+                        $pagesviewed = $DB->get_field('logstore_standard_log', 'count(distinct contextinstanceid)', ['action' => 'viewed', 'userid' => $userId]);
+                        $userStat['totallogins'] = $totallogins ? $totallogins : 0;
+                        $userStat['pagesviewed'] = $pagesviewed ? $pagesviewed : 0;
+                        // Get the timefinish for quizz from the database.
+                        $sql = "
+                            SELECT qa.timefinish
+                            FROM {quiz_attempts} AS qa
+                            WHERE qa.userid = {$userId} AND qa.state = 'finished'
+                            ORDER BY qa.timefinish DESC
+                            LIMIT 1";
+                        $lastquizattempt = $DB->get_field_sql($sql);
+                        $userStat['lastquizattempt'] = $lastquizattempt ? $lastquizattempt : 0;
+                        // Build the results.
+                        $returnedusers[] = $userStat;
+                    }
+                }
+            }
+        }
+        return $returnedusers;
+    }
+
+     /**
+      * Returns description of method result value.
+      * @return external_description.
+      */
+    public static function get_users_statistics_by_date_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                [
+                    'id' => new external_value(PARAM_INT, get_string('return_id', 'local_myddleware')),
+                    'username' => new external_value(PARAM_TEXT, get_string('return_username', 'local_myddleware')),
+                    'email' => new external_value(PARAM_TEXT, get_string('return_email', 'local_myddleware')),
+                    'lastname' => new external_value(PARAM_TEXT, get_string('return_lastname', 'local_myddleware')),
+                    'timemodified' => new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware')),
+                    'totallogins' => new external_value(PARAM_INT, get_string('return_totallogins', 'local_myddleware')),
+                    'pagesviewed' => new external_value(PARAM_INT, get_string('return_pagesviewed', 'local_myddleware')),
+                    'lastquizattempt' => new external_value(PARAM_INT, get_string('return_lastquizattempt', 'local_myddleware')),
+                    'lastaccess' => new external_value(PARAM_INT, get_string('return_lastaccess', 'local_myddleware')),
+                ]
+            )
+        );
+    }
+
+    /**
+     * Returns description of method parameters.
+     * @return external_function_parameters.
+     */
     public static function get_enrolments_by_date_parameters() {
         return new external_function_parameters(
             [
@@ -1284,6 +1478,9 @@ class local_myddleware_external extends external_api {
                 grd.aggregationweight,
                 itm.courseid,
                 itm.itemname,
+                itm.itemtype,
+                itm.itemmodule,
+                itm.iteminstance,
                 crs.fullname course_fullname,
                 crs.shortname course_shortname
             FROM {grade_grades} grd
@@ -1345,11 +1542,136 @@ class local_myddleware_external extends external_api {
                         PARAM_FLOAT, get_string('return_aggregationweight', 'local_myddleware')),
                     'courseid' => new external_value(PARAM_INT, get_string('return_courseid', 'local_myddleware')),
                     'itemname' => new external_value(PARAM_TEXT, get_string('return_itemname', 'local_myddleware')),
+                    'itemtype' => new external_value(PARAM_TEXT, get_string('return_itemtype', 'local_myddleware')),
+                    'itemmodule' => new external_value(PARAM_TEXT, get_string('return_itemmodule', 'local_myddleware')),
+                    'iteminstance' => new external_value(PARAM_TEXT, get_string('return_iteminstance', 'local_myddleware')),
                     'course_fullname' => new external_value(PARAM_TEXT, get_string('return_fullname', 'local_myddleware')),
                     'course_shortname' => new external_value(PARAM_TEXT, get_string('return_shortname', 'local_myddleware')),
                 ]
             )
         );
     }
+    
+    /**
+     * Returns description of method parameters.
+     * @return external_function_parameters.
+     */
+    public static function get_quiz_attempts_parameters() {
+        return new external_function_parameters(
+            array(
+                'time_modified' => new external_value(
+                    PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
+            )
+        );
+    }
 
+    /**
+     * This function search completion created after the date $timemodified in parameters.
+     * @param int $timemodified
+     * @param int $id
+     * @return an array with the detail of each quizzes.
+     */
+    public static function get_quiz_attempts($timemodified, $id) {
+        global $USER, $DB;
+
+        // Parameter validation.
+        $params = self::validate_parameters(
+            self::get_users_completion_parameters(),
+            array('time_modified' => $timemodified, 'id' => $id)
+        );
+
+        // Context validation.
+        $context = context_user::instance($USER->id);
+        self::validate_context($context);
+
+        require_capability('moodle/user:viewdetails', $context);
+
+        // Prepare the query condition.
+        if (!empty($id)) {
+            $where = ' att.id = :id';
+        } else {
+            $where = ' att.timemodified > :timemodified';
+        }
+        $queryparams = array(
+                            'id' => (!empty($params['id']) ? $params['id'] : ''),
+                            'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : '')
+                        );
+
+        // Retrieve token list (including linked users firstname/lastname and linked services name).
+        $sql = "
+            SELECT 
+                att.id,
+                att.userid,
+                att.attempt,
+                att.state,
+                att.timefinish,
+                att.timemodified,
+                att.timemodifiedoffline,
+                att.timecheckstate,
+                att.sumgrades,
+                att.gradednotificationsenttime,
+                att.uniqueid,
+                qz.id as quizid,
+                qz.course as courseid,
+                qz.name,
+                grd.grade,
+                cm.id as cmid
+            FROM {quiz_attempts} att
+            INNER JOIN {quiz} qz
+                ON qz.id = att.quiz
+            LEFT JOIN {quiz_grades} grd 
+                ON grd.quiz = att.quiz 
+                AND grd.userid = att.userid
+            INNER JOIN {course_modules} cm
+                ON cm.instance = qz.id
+                INNER JOIN {modules} md
+                    ON md.id = cm.module
+                    AND md.name = 'quiz'
+            WHERE
+                ".$where."
+            ORDER BY att.timemodified ASC, att.id ASC
+                ";                
+        $rs = $DB->get_recordset_sql($sql, $queryparams);
+
+        $quizattempts = array();
+        if (!empty($rs)) {
+            foreach ($rs as $attemps) {
+                foreach ($attemps as $key => $value) {
+                    $attemp[$key] = $value;
+                }
+                $quizattempts[] = $attemp;
+            }
+        }
+        return $quizattempts;
+    }
+
+     /**
+      * Returns description of method result value.
+      * @return external_description.
+      */
+    public static function get_quiz_attempts_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                array(            
+                    'id' => new external_value(PARAM_INT, get_string('return_id', 'local_myddleware')),
+                    'userid' => new external_value(PARAM_INT, get_string('return_userid', 'local_myddleware')),
+                    'attempt' => new external_value(PARAM_INT, get_string('return_attempt', 'local_myddleware')),
+                    'state' => new external_value(PARAM_TEXT, get_string('return_state', 'local_myddleware')),
+                    'timefinish' => new external_value(PARAM_INT, get_string('return_timefinish', 'local_myddleware')),
+                    'timemodified' => new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware')),
+                    'timemodifiedoffline' => new external_value(PARAM_INT, get_string('return_timemodifiedoffline', 'local_myddleware')),
+                    'timecheckstate' => new external_value(PARAM_INT, get_string('return_timecheckstate', 'local_myddleware')),
+                    'sumgrades' => new external_value(PARAM_FLOAT, get_string('return_sumgrades', 'local_myddleware')),
+                    'gradednotificationsenttime' => new external_value(PARAM_INT, get_string('return_gradednotificationsenttime', 'local_myddleware')),
+                    'uniqueid' => new external_value(PARAM_INT, get_string('return_uniqueid', 'local_myddleware')),
+                    'quizid' => new external_value(PARAM_INT, get_string('return_quizid', 'local_myddleware')),
+                    'courseid' => new external_value(PARAM_INT, get_string('return_courseid', 'local_myddleware')),
+                    'name' => new external_value(PARAM_TEXT, get_string('return_name', 'local_myddleware')),
+                    'grade' => new external_value(PARAM_FLOAT, get_string('return_grade', 'local_myddleware')),
+                    'cmid' => new external_value(PARAM_INT, get_string('return_cmid', 'local_myddleware'))
+                )
+            )
+        );
+    }
 }
