@@ -991,7 +991,7 @@ class local_myddleware_external extends external_api {
                 }
             }
         }
-        return null;
+        return array();
     }
 
 
