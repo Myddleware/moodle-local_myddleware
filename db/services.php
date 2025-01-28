@@ -111,6 +111,20 @@ $functions = [
             'description' => 'Return grades of users',
             'type'        => 'read',
     ],
+    'local_myddleware_get_users_statistics_by_date' => [
+            'classname'   => 'local_myddleware_external',
+            'methodname'  => 'get_users_statistics_by_date',
+            'classpath'   => 'local/myddleware/externallib.php',
+            'description' => 'Return statistics of users',
+            'type'        => 'read',
+    ],
+    'local_myddleware_get_quiz_attempts' => [
+            'classname'   => 'local_myddleware_external',
+            'methodname'  => 'get_quiz_attempts',
+            'classpath'   => 'local/myddleware/externallib.php',
+            'description' => 'Return quizzes of users',
+            'type'        => 'read',
+    ],
 ];
 
 // We define the services to install as pre-build services.
@@ -130,6 +144,8 @@ $services = [
                         'local_myddleware_get_user_compentencies_by_date',
                         'local_myddleware_get_competency_module_completion_by_date',
                         'local_myddleware_get_user_grade',
+                        'local_myddleware_get_users_statistics_by_date',
+						'local_myddleware_get_quiz_attempts',
                         'core_course_create_courses',
                         'core_course_get_categories',
                         'core_course_get_courses_by_field',
