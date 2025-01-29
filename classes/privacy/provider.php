@@ -14,19 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Privacy provider implementation for local_myddleware
- *
- * @package    local_myddleware
- * @copyright  2017 Myddleware
- * @author     Myddleware ltd
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace myddleware\privacy;
 
 use core_privacy\local\metadata\collection;
-
 
 /**
  * Privacy provider for local_myddleware implementing null provider
@@ -37,23 +27,25 @@ use core_privacy\local\metadata\collection;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements
-        // This plugin export data to external systems
+        // This plugin export data to external systems.
         \core_privacy\local\metadata\provider {
 
-    /* Returns metadata.
-    *
-    * @param collection $collection The initialised collection to add items to.
-    * @return collection A listing of user data stored through this system.
-    */
+    /**
+     * Provides metadata about the user data stored by this plugin.
+     * This function defines the personal data that is shared with Myddleware,
+     * such as user email and full name, to ensure compliance with privacy regulations.
+     * @param collection $collection The initialized collection to add metadata items to.
+     * @return collection The updated collection containing metadata about stored user data.
+     */
     public static function get_metadata(collection $collection): collection {
         // Personal information has to be passed to Myddleware.
         // This includes the user email, fullname...
         $collection->add_external_location_link('myddleware', [
-                'userid' => 'privacy:metadata:myddleware:userid',
-                'fullname' => 'privacy:metadata:myddleware:fullname',
-                'email' => 'privacy:metadata:myddleware:email',
-                'username' => 'privacy:metadata:myddleware:username',
-                'id' => 'privacy:metadata:myddleware:id',
+            'userid' => 'privacy:metadata:myddleware:userid',
+            'fullname' => 'privacy:metadata:myddleware:fullname',
+            'email' => 'privacy:metadata:myddleware:email',
+            'username' => 'privacy:metadata:myddleware:username',
+            'id' => 'privacy:metadata:myddleware:id',
             'password' => 'privacy:metadata:myddleware:password',
             'createpassword' => 'privacy:metadata:myddleware:createpassword',
             'firstname' => 'privacy:metadata:myddleware:firstname',
@@ -72,7 +64,6 @@ class provider implements
             'lastnamephonetic' => 'privacy:metadata:myddleware:lastnamephonetic',
             'middlename' => 'privacy:metadata:myddleware:middlename',
             'alternatename' => 'privacy:metadata:myddleware:alternatename',
-            'fullname' => 'privacy:metadata:myddleware:fullname',
             'address' => 'privacy:metadata:myddleware:address',
             'phone1' => 'privacy:metadata:myddleware:phone1',
             'phone2' => 'privacy:metadata:myddleware:phone2',
@@ -95,9 +86,7 @@ class provider implements
             'preferences' => 'privacy:metadata:myddleware:preferences',
             'customfields' => 'privacy:metadata:myddleware:customfields',
             'timemodified' => 'privacy:metadata:myddleware:timemodified',
-
             ], 'privacy:metadata:myddleware');
-    
         return $collection;
     }
 }

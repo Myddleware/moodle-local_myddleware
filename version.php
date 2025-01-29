@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * External Web Service Template
  *
@@ -23,9 +24,9 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2023102700;
+$plugin->version  = 2025012807;
 $plugin->requires = 2010112400;
 $plugin->cron     = 0;
-$plugin->release = '2.0.0';
+$plugin->release = '2.2.0';
 $plugin->maturity = MATURITY_STABLE;
 $plugin->component = 'local_myddleware';
