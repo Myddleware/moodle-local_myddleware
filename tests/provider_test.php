@@ -43,7 +43,7 @@ final class provider_test extends advanced_testcase {
      * @covers ::get_metadata
      * @return array Returns an empty array).
      */
-    public function test_get_metadata(): array {
+    public function test_get_metadata(): void {
         $this->resetAfterTest();
         $provider = new provider();
         $collection = new collection('local_myddleware');
@@ -55,6 +55,5 @@ final class provider_test extends advanced_testcase {
         $this->assertEquals('local_myddleware', $metadata->get_component());
         $this->assertCount(1, $items);
         $this->assertInstanceOf(external_location::class, $items[0]);
-        return [];
     }
 }

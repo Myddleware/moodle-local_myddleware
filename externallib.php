@@ -60,7 +60,7 @@ class local_myddleware_external extends external_api {
      * @return an array with the detail of each completion (id,userid,completionstate,timemodified,moduletype,instance,courseid).
      */
     public static function get_users_completion($timemodified, $id) {
-        global $USER, $DB;
+        global $DB;
 
         // Parameter validation.
         $params = self::validate_parameters(
@@ -69,16 +69,18 @@ class local_myddleware_external extends external_api {
         );
 
         // Context validation.
-        $context = context_user::instance($USER->id);
+        $context = context_system::instance();
         self::validate_context($context);
 
-        require_capability('moodle/user:viewdetails', $context);
+        // Get the subquery to filter only records linked to the tenant of the current user.
+        $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'cmc.userid'], '');
 
         // Prepare the query condition.
         if (!empty($id)) {
-            $where = ' cmc.id = :id';
+            $where = (!empty($wheretenant) ? $wheretenant : "")." cmc.id = :id ";
         } else {
-            $where = ' cmc.timemodified > :timemodified';
+            $where = (!empty($wheretenant) ? $wheretenant : "")." cmc.timemodified > :timemodified ";
         }
 
         // Retrieve token list (including linked users firstname/lastname and linked services name).
@@ -112,6 +114,12 @@ class local_myddleware_external extends external_api {
             foreach ($rs as $completionrecords) {
                 foreach ($completionrecords as $key => $value) {
                     $completion[$key] = $value;
+                }
+
+                // Security check to validate the course.
+                list($courses, $warnings) = core_external\util::validate_courses([$completion['courseid']], [], true);
+                if (empty($courses[$completion['courseid']])) {
+                    continue;
                 }
                 // Add information about the module.
                 $modinfo = get_fast_modinfo($completion['courseid']);
@@ -173,7 +181,7 @@ class local_myddleware_external extends external_api {
      * @return an array with the detail of each access (id, userid, access time and courseid).
      */
     public static function get_users_last_access($timemodified, $id) {
-        global $USER, $DB;
+        global $DB;
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_users_last_access_parameters(),
@@ -181,16 +189,19 @@ class local_myddleware_external extends external_api {
         );
 
         // Context validation.
-        $context = context_user::instance($USER->id);
+        $context = context_system::instance();
         self::validate_context($context);
-
         require_capability('moodle/user:viewdetails', $context);
+
+        // Get the subquery to filter only records linked to the tenant of the current user.
+        $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'la.userid'], '');
 
         // Prepare the query condition.
         if (!empty($id)) {
-            $where = ' la.id = :id';
+            $where = (!empty($wheretenant) ? $wheretenant : "")." la.id = :id ";
         } else {
-            $where = ' la.timeaccess > :timemodified';
+            $where = (!empty($wheretenant) ? $wheretenant : "")." la.timeaccess > :timemodified ";
         }
 
         $sql = "
@@ -235,7 +246,7 @@ class local_myddleware_external extends external_api {
                     'userid' => new external_value(PARAM_INT, get_string('return_userid', 'local_myddleware')),
                     'courseid' => new external_value(PARAM_INT, get_string('return_courseid', 'local_myddleware')),
                     'lastaccess' => new external_value(PARAM_INT, get_string('return_lastaccess', 'local_myddleware')),
-                ],
+                ]
             )
         );
     }
@@ -270,6 +281,10 @@ class local_myddleware_external extends external_api {
             ['time_modified' => $timemodified, 'id' => $id]
         );
 
+        // Context validation.
+        $context = context_system::instance();
+        self::validate_context($context);
+
         // Prepare the query condition.
         if (!empty($id)) {
             $where = ' id = :id';
@@ -283,6 +298,9 @@ class local_myddleware_external extends external_api {
 
         // Select the courses modified after the datime $timemodified. We select them order by timemodified ascending.
         $selectedcourses = $DB->get_records_select('course', $where, $queryparams, ' timemodified ASC ', 'id');
+        // Security check to validate the course.
+        list($selectedcourses, $warnings) = core_external\util::validate_courses(
+            array_keys($selectedcourses), $selectedcourses, true);
 
         $returnedcourses = [];
         if (!empty($selectedcourses)) {
@@ -337,6 +355,10 @@ class local_myddleware_external extends external_api {
             self::get_groups_by_date_parameters(),
             ['time_modified' => $timemodified, 'id' => $id]
         );
+
+        // Context validation.
+        $context = context_system::instance();
+        self::validate_context($context);
 
         // Prepare the query condition.
         if (!empty($id)) {
@@ -406,7 +428,7 @@ class local_myddleware_external extends external_api {
      * @return an array with the detail of each group members (id, groupid, time added and userid).
      */
     public static function get_group_members_by_date($timemodified, $id) {
-        global $USER, $DB;
+        global $DB;
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_users_last_access_parameters(),
@@ -414,15 +436,18 @@ class local_myddleware_external extends external_api {
         );
 
         // Context validation.
-        $context = context_user::instance($USER->id);
+        $context = context_system::instance();
         self::validate_context($context);
-        require_capability('moodle/course:managegroups', $context);
+
+        // Get the subquery to filter only records linked to the tenant of the current user.
+        $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'gm.userid'], '');
 
         // Prepare the query condition.
         if (!empty($id)) {
-            $where = ' gm.id = :id';
+            $where = (!empty($wheretenant) ? $wheretenant : "")." gm.id = :id ";
         } else {
-            $where = ' gm.timeadded > :timemodified';
+            $where = (!empty($wheretenant) ? $wheretenant : "")." gm.timeadded > :timemodified ";
         }
 
         $sql = "
@@ -502,16 +527,31 @@ class local_myddleware_external extends external_api {
             ['time_modified' => $timemodified, 'id' => $id]
         );
 
+        // Context validation.
+        $context = context_system::instance();
+        self::validate_context($context);
+        require_capability('moodle/user:viewdetails', $context);
+
+        // Get the subquery to filter only records linked to the tenant of the current user.
+        $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, '{user}.id'], '');
+
         // Prepare the query condition.
         if (!empty($id)) {
-            $where = ' deleted = 0 AND id = :id';
+            $where = (!empty($wheretenant) ? $wheretenant : "")." {user}.deleted = 0 AND {user}.id = :id ";
+        } else if (!empty($timemodified)) {
+            $where = (!empty($wheretenant) ? $wheretenant : "")." {user}.deleted = 0 AND {user}.timemodified > :timemodified ";
         } else {
-            $where = ' deleted = 0 AND timemodified > :timemodified';
+            return null;
         }
+
+        // Prepare query parameters.
         $queryparams = [
                             'id' => (!empty($params['id']) ? $params['id'] : ''),
                             'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : ''),
                         ];
+        // Get users.
+        $selectedusers = $DB->get_records_select('user', $where, $queryparams, ' timemodified ASC ', '*');
 
         // Select the users modified after the datime $timemodified.
         $additionalfields = 'id, timemodified, lastnamephonetic, firstnamephonetic, middlename, alternatename';
@@ -521,7 +561,7 @@ class local_myddleware_external extends external_api {
             // Call function get_users for each user found.
             foreach ($selectedusers as $user) {
                 $userdetails = [];
-                $userdetails = core_user_external::get_users([ 'criteria' => [ 'key' => 'id', 'value' => $user->id]]);
+                $userdetails = core_user_external::get_users([ 'criteria' => [ 'key' => 'id', 'value' => $user->id ]]);
                 // Add fields not returned by standard function.
                 $userdetails['users'][0]['timemodified'] = $user->timemodified;
                 $userdetails['users'][0]['lastnamephonetic'] = $user->lastnamephonetic;
@@ -586,6 +626,205 @@ class local_myddleware_external extends external_api {
      * Returns description of method parameters.
      * @return external_function_parameters.
      */
+    public static function get_users_statistics_by_date_parameters() {
+        return new external_function_parameters(
+            [
+                'time_modified' => new external_value(
+                    PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
+            ]
+        );
+    }
+
+    /**
+     * This function search completion created after the date $timemodified in parameters.
+     * @param int $timemodified
+     * @param int $id
+     * @return array an array with the detail of each grades.
+     */
+    public static function get_users_statistics_by_date($timemodified, $id) {
+        global $DB;
+        $returnedusers = [];
+        $users = [];
+
+        // Parameter validation.
+        $params = self::validate_parameters(
+            self::get_user_grades_parameters(),
+            ['time_modified' => $timemodified, 'id' => $id]
+        );
+
+        // Context validation.
+        $context = context_system::instance();
+        self::validate_context($context);
+        require_capability('moodle/user:viewdetails', $context);
+
+        // Search every last access record
+        // Get the subquery to filter only records linked to the tenant of the current user.
+        $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'la.userid'], '');
+        // Prepare the query condition.
+        if (!empty($id)) {
+            $where = (!empty($wheretenant) ? $wheretenant : "")." la.userid = :id ";
+        } else {
+            $where = (!empty($wheretenant) ? $wheretenant : "")." la.timeaccess > :timemodified ";
+        }
+        $sqllastaccess = "SELECT la.userid, la.timeaccess FROM {user_lastaccess} la WHERE ".$where;
+        $queryparamslastaccess = [
+                            'id' => (!empty($params['id']) ? $params['id'] : ''),
+                            'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : ''),
+                        ];
+        $urserlastaccess = $DB->get_recordset_sql($sqllastaccess, $queryparamslastaccess);
+        if (!empty($urserlastaccess)) {
+            foreach ($urserlastaccess as $urserla) {
+                // Change the result only if the user isn't already in the array.
+                // Or if its reference date is greater than the one in the results.
+                if (
+                        !array_key_exists($urserla->userid, $users)
+                     || (
+                            array_key_exists($urserla->userid, $users)
+                        && $users[$urserla->userid] < $urserla->timeaccess
+                    )
+                ) {
+                    $users[$urserla->userid] = $urserla->timeaccess;
+                }
+            }
+        }
+        // Search every user log.
+        $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'log.userid'], '');
+        // Prepare the query condition.
+        if (!empty($id)) {
+            $where = (!empty($wheretenant) ? $wheretenant : "")." log.userid = :id ";
+        } else {
+            $where = (!empty($wheretenant) ? $wheretenant : "")." log.timecreated > :timemodified ";
+        }
+        $sqluserlog = "SELECT log.userid, log.timecreated FROM {logstore_standard_log} log
+                        WHERE
+                                action IN ('viewed','loggedin')
+                            AND ".$where;
+        $queryparamsuserlog = [
+                            'id' => (!empty($params['id']) ? $params['id'] : ''),
+                            'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : ''),
+                        ];
+        $urserlog = $DB->get_recordset_sql($sqluserlog, $queryparamsuserlog);
+        if (!empty($urserlog)) {
+            foreach ($urserlog as $urserlo) {
+                // Change the result only if the user isn't already in the array.
+                // Or if its reference date is greater than the one in the results.
+                if (
+                        !array_key_exists($urserlo->userid, $users)
+                     || (
+                            array_key_exists($urserlo->userid, $users)
+                        && $users[$urserlo->userid] < $urserlo->timecreated
+                    )
+                ) {
+                    $users[$urserlo->userid] = $urserlo->timecreated;
+                }
+            }
+        }
+        // Search every quizz attempts.
+        $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'qa.userid'], '');
+        // Prepare the query condition.
+        if (!empty($id)) {
+            $where = (!empty($wheretenant) ? $wheretenant : "")." qa.userid = :id ";
+        } else {
+            $where = (!empty($wheretenant) ? $wheretenant : "")." qa.timemodified > :timemodified ";
+        }
+        $sqlquizattempt = "SELECT qa.userid, qa.timemodified FROM {quiz_attempts} qa WHERE ".$where;
+        $queryparamsquizattemp = [
+                            'id' => (!empty($params['id']) ? $params['id'] : ''),
+                            'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : ''),
+                        ];
+        $urserquizattemp = $DB->get_recordset_sql($sqlquizattempt, $queryparamsquizattemp);
+        if (!empty($urserquizattemp)) {
+            foreach ($urserquizattemp as $urserqa) {
+                // Change the result only if the user isn't already in the array.
+                // Or if its reference date is greater than the one in the results.
+                if (
+                        !array_key_exists($urserqa->userid, $users)
+                     || (
+                            array_key_exists($urserqa->userid, $users)
+                        && $users[$urserqa->userid] < $urserqa->timemodified
+                    )
+                ) {
+                    $users[$urserqa->userid] = $urserqa->timemodified;
+                }
+            }
+        }
+
+        if (!empty($users)) {
+            // Add statistics for each users.
+             // Get the subquery to filter only records linked to the tenant of the current user.
+            $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+                [true, true, '{user}.id'], '');
+            // Prepare the query condition.
+            $where = (!empty($wheretenant) ? $wheretenant : "")." {user}.deleted = 0 AND {user}.id = :id ";
+
+            foreach ($users as $userid => $usertimemodified) {
+                // Get the detail of each user.
+                $queryparams = ['id' => $userid];
+                $userres = $DB->get_records_select('user', $where, $queryparams, '', '*');
+                if (!empty($userres)) {
+                    foreach ($userres as $key => $user) {
+                        $userid = $user->id;
+                        $userstat['id'] = $userid;
+                        $userstat['username'] = $user->username;
+                        $userstat['email'] = $user->email;
+                        $userstat['lastname'] = $user->lastname;
+                        $userstat['timemodified'] = $usertimemodified;
+                        $userstat['lastaccess'] = $user->lastaccess;
+                        // Get the log stats.
+                        $totallogins = $DB->get_field('logstore_standard_log',
+                            'count(id)', ['action' => 'loggedin', 'userid' => $userid]);
+                        $pagesviewed = $DB->get_field('logstore_standard_log',
+                            'count(distinct contextinstanceid)', ['action' => 'viewed', 'userid' => $userid]);
+                        $userstat['totallogins'] = $totallogins ? $totallogins : 0;
+                        $userstat['pagesviewed'] = $pagesviewed ? $pagesviewed : 0;
+                        // Get the timefinish for quizz from the database.
+                        $sql = "
+                            SELECT qa.timefinish
+                            FROM {quiz_attempts} AS qa
+                            WHERE qa.userid = {$userid} AND qa.state = 'finished'
+                            ORDER BY qa.timefinish DESC
+                            LIMIT 1";
+                        $lastquizattempt = $DB->get_field_sql($sql);
+                        $userstat['lastquizattempt'] = $lastquizattempt ? $lastquizattempt : 0;
+                        // Build the results.
+                        $returnedusers[] = $userstat;
+                    }
+                }
+            }
+        }
+        return $returnedusers;
+    }
+
+     /**
+      * Returns description of method result value.
+      * @return external_description.
+      */
+    public static function get_users_statistics_by_date_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                [
+                    'id' => new external_value(PARAM_INT, get_string('return_id', 'local_myddleware')),
+                    'username' => new external_value(PARAM_TEXT, get_string('return_username', 'local_myddleware')),
+                    'email' => new external_value(PARAM_TEXT, get_string('return_email', 'local_myddleware')),
+                    'lastname' => new external_value(PARAM_TEXT, get_string('return_lastname', 'local_myddleware')),
+                    'timemodified' => new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware')),
+                    'totallogins' => new external_value(PARAM_INT, get_string('return_totallogins', 'local_myddleware')),
+                    'pagesviewed' => new external_value(PARAM_INT, get_string('return_pagesviewed', 'local_myddleware')),
+                    'lastquizattempt' => new external_value(PARAM_INT, get_string('return_lastquizattempt', 'local_myddleware')),
+                    'lastaccess' => new external_value(PARAM_INT, get_string('return_lastaccess', 'local_myddleware')),
+                ]
+            )
+        );
+    }
+
+    /**
+     * Returns description of method parameters.
+     * @return external_function_parameters.
+     */
     public static function get_enrolments_by_date_parameters() {
         return new external_function_parameters(
             [
@@ -613,16 +852,25 @@ class local_myddleware_external extends external_api {
         );
 
         // Prepare the query condition.
+        $context = context_system::instance();
+        self::validate_context($context);
+        require_capability('enrol/manual:manage', $context);
+
+        // Get the subquery to filter only records linked to the tenant of the current user.
+        $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'userid'], '');
+
+        // Prepare the query condition with the tenant.
         if (!empty($id)) {
-            $where = ' id = :id';
+            $where = (!empty($wheretenant) ? $wheretenant : "")." id = :id ";
         } else {
-            $where = ' timemodified > :timemodified ';
+            $where = (!empty($wheretenant) ? $wheretenant : "")." timemodified > :timemodified ";
         }
+
         $queryparams = [
                             'id' => (!empty($params['id']) ? $params['id'] : ''),
                             'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : ''),
                         ];
-
         $returnenrolments = [];
         // Select enrolment modified after the date in input.
         $userenrolments = $DB->get_records_select('user_enrolments', $where, $queryparams, ' timemodified ASC ', '*');
@@ -633,6 +881,11 @@ class local_myddleware_external extends external_api {
                 $instance = $DB->get_record('enrol', ['id' => $userenrolment->enrolid], '*', MUST_EXIST);
                 // Prepare result.
                 if (!empty($instance)) {
+                    // Security check to validate the course.
+                    list($courses, $warnings) = core_external\util::validate_courses([$instance->courseid], [], true);
+                    if (empty($courses)) {
+                        continue;
+                    }
                     $userenroldata = [
                         'id' => $userenrolment->id,
                         'userid' => $userenrolment->userid,
@@ -677,6 +930,99 @@ class local_myddleware_external extends external_api {
         );
     }
 
+    /**
+     * Returns description of method parameters.
+     * @return external_function_parameters.
+     */
+    public static function search_enrolment_parameters() {
+        return new external_function_parameters(
+            [
+                'userid' => new external_value(PARAM_INT, get_string('userid', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'courseid' => new external_value(PARAM_INT, get_string('courseid', 'local_myddleware'), VALUE_DEFAULT, 0),
+            ]
+        );
+    }
+
+    /**
+     * This function search the enrolments using role_id, course_id and user_id
+     * @param int $userid
+     * @param int $courseid
+     * @return array the list of user enrolments.
+     */
+    public static function search_enrolment($userid, $courseid) {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . "/course/externallib.php");
+
+        // Parameter validation.
+        $params = self::validate_parameters(
+            self::search_enrolment_parameters(),
+            ['userid' => $userid, 'courseid' => $courseid]
+        );
+
+        // Context validation.
+        $context = context_system::instance();
+        self::validate_context($context);
+        require_capability('enrol/manual:manage', $context);
+
+        // Get the subquery to filter only records linked to the tenant of the current user.
+        $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'ue.userid'], '');
+
+        // Prepare the query condition with the tenant.
+        $where = (!empty($wheretenant) ? $wheretenant : "")." ue.userid = :userid AND en.courseid = :courseid ";
+
+        // Get the user enrolment id.
+        $sql = "
+            SELECT ue.id
+            FROM {enrol} en
+                INNER JOIN {user_enrolments} ue
+                    ON en.id = ue.enrolid
+            WHERE ".$where;
+        $queryparams = [
+                            'userid' => $params['userid'],
+                            'courseid' => $params['courseid'],
+                        ];
+        $rs = $DB->get_recordset_sql($sql, $queryparams);
+
+        // If a result is found, we use the method get_enrolments_by_date to return the result.
+        if (!empty($rs)) {
+            foreach ($rs as $enrol) {
+                foreach ($enrol as $key => $value) {
+                    if (
+                            $key == 'id'
+                        && !empty($value)
+                    ) {
+                        return self::get_enrolments_by_date(0, $value);
+                    }
+                }
+            }
+        }
+        return [];
+    }
+
+
+    /**
+     * Returns description of method result value.
+     * @return external_description.
+     */
+    public static function search_enrolment_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                [
+                    'id' => new external_value(PARAM_INT, get_string('return_id', 'local_myddleware')),
+                    'userid' => new external_value(PARAM_INT, get_string('return_userid', 'local_myddleware')),
+                    'courseid' => new external_value(PARAM_INT, get_string('return_courseid', 'local_myddleware')),
+                    'roleid' => new external_value(PARAM_INT, get_string('return_roleid', 'local_myddleware')),
+                    'status' => new external_value(PARAM_TEXT, get_string('return_status', 'local_myddleware')),
+                    'enrol' => new external_value(PARAM_TEXT, get_string('return_enrol', 'local_myddleware')),
+                    'timestart' => new external_value(PARAM_INT, get_string('return_timestart', 'local_myddleware')),
+                    'timeend' => new external_value(PARAM_INT, get_string('return_timeend', 'local_myddleware')),
+                    'timecreated' => new external_value(PARAM_INT, get_string('return_timecreated', 'local_myddleware')),
+                    'timemodified' => new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware')),
+                ]
+            )
+        );
+    }
 
     /**
      * Returns description of method parameters.
@@ -708,11 +1054,19 @@ class local_myddleware_external extends external_api {
             ['time_modified' => $timemodified, 'id' => $id]
         );
 
+        // Context validation.
+        $context = context_system::instance();
+        self::validate_context($context);
+
+        // Get the subquery to filter only records linked to the tenant of the current user.
+        $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'userid'], '');
+
         // Prepare the query condition.
         if (!empty($id)) {
-            $where = ' id = :id';
+            $where = (!empty($wheretenant) ? $wheretenant : "")." id = :id ";
         } else {
-            $where = ' timecompleted > :timemodified  OR reaggregate > 0 ';
+            $where = (!empty($wheretenant) ? $wheretenant : "")." timecompleted > :timemodified  OR reaggregate > 0 ";
         }
         $queryparams = [
                             'id' => (!empty($params['id']) ? $params['id'] : ''),
@@ -721,6 +1075,11 @@ class local_myddleware_external extends external_api {
         $returncompletions = [];
         // Select enrolment modified after the date in input.
         $selectedcompletions = $DB->get_records_select('course_completions', $where, $queryparams, ' timecompleted ASC ', '*');
+
+        // Security check to validate the courses.
+        $courseids = array_unique(array_column($selectedcompletions, 'course'));
+        list($courses, $warnings) = core_external\util::validate_courses($courseids, [], true);
+
         if (!empty($selectedcompletions)) {
             // Date ref management : date ref is usually the timecompleted.
             // But if reaggregate is not empty we have to keep the smaller value of this field.
@@ -730,6 +1089,10 @@ class local_myddleware_external extends external_api {
             // So we have to keep reaggregate as the reference date.
             // Because we have to read the completion after the next cron job runs.
             foreach ($selectedcompletions as $selectedcompletion) {
+                // Security check to validate the courses.
+                if (empty($courses[$selectedcompletion->course])) {
+                    continue;
+                }
                 // Keep the smaller value of reaggregateif it exists.
                 if ($selectedcompletion->reaggregate > 0 &&
                    ($selectedcompletion->reaggregate < $daterefoverride || $daterefoverride == -1)) {
@@ -739,6 +1102,10 @@ class local_myddleware_external extends external_api {
 
             // Prepare result.
             foreach ($selectedcompletions as $selectedcompletion) {
+                // Security check to validate the courses.
+                if (empty($courses[$selectedcompletion->course])) {
+                    continue;
+                }
                 // We keep only completion with timecompleted not null.
                 // Ssome completion could have reaggregate not null and timecompleted null.
                 if (empty($selectedcompletion->timecompleted)) {
@@ -805,7 +1172,7 @@ class local_myddleware_external extends external_api {
      * @return the list of user compentencies.
      */
     public static function get_user_compentencies_by_date($timemodified, $id) {
-        global $USER, $DB;
+        global $DB;
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_user_compentencies_by_date_parameters(),
@@ -813,15 +1180,19 @@ class local_myddleware_external extends external_api {
         );
 
         // Context validation.
-        $context = context_user::instance($USER->id);
+        $context = context_system::instance();
         self::validate_context($context);
         require_capability('moodle/competency:usercompetencyview', $context);
 
+        // Get the subquery to filter only records linked to the tenant of the current user.
+        $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'userid'], '');
+
         // Prepare the query condition.
         if (!empty($id)) {
-            $where = ' id = :id';
+            $where = (!empty($wheretenant) ? $wheretenant : "")." id = :id ";
         } else {
-            $where = ' timemodified > :timemodified';
+            $where = (!empty($wheretenant) ? $wheretenant : "")." timemodified > :timemodified ";
         }
         $queryparams = [
                             'id' => (!empty($params['id']) ? $params['id'] : ''),
@@ -936,7 +1307,7 @@ class local_myddleware_external extends external_api {
      * @return the list of competency module completions
      */
     public static function get_competency_module_completion_by_date($timemodified, $id) {
-        global $USER, $DB;
+        global $DB;
         // Parameter validation.
         $params = self::validate_parameters(
             self::get_user_compentencies_by_date_parameters(),
@@ -944,7 +1315,7 @@ class local_myddleware_external extends external_api {
         );
 
         // Context validation.
-        $context = context_user::instance($USER->id);
+        $context = context_system::instance();
         self::validate_context($context);
         require_capability('moodle/competency:usercompetencyview', $context);
 
@@ -989,8 +1360,21 @@ class local_myddleware_external extends external_api {
         $competencymodulecompletions = [];
         if (!empty($rs)) {
             foreach ($rs as $competencymodulecompletionrecords) {
+                $courseerror = false;
                 foreach ($competencymodulecompletionrecords as $key => $value) {
+                    // Validate course.
+                    if ($key == 'courseid') {
+                        list($courses, $warnings) = core_external\util::validate_courses([$value], [], true);
+                        if (empty($courses[$value])) {
+                            $courseerror = true;
+                            break;
+                        }
+                    }
                     $competencymodulecompletion[$key] = $value;
+                }
+                // If error we go to the next record.
+                if ($courseerror) {
+                    continue;
                 }
                 $competencymodulecompletions[] = $competencymodulecompletion;
             }
@@ -1044,25 +1428,28 @@ class local_myddleware_external extends external_api {
      * @return an array with the detail of each grades.
      */
     public static function get_user_grades($timemodified, $id) {
-        global $USER, $DB;
+        global $DB;
 
         // Parameter validation.
         $params = self::validate_parameters(
-            self::get_users_completion_parameters(),
+            self::get_user_grades_parameters(),
             ['time_modified' => $timemodified, 'id' => $id]
         );
 
         // Context validation.
-        $context = context_user::instance($USER->id);
+        $context = context_system::instance();
         self::validate_context($context);
+        require_capability('moodle/grade:viewall', $context);
 
-        require_capability('moodle/user:viewdetails', $context);
+        // Get the subquery to filter only records linked to the tenant of the current user.
+        $wheretenant = component_class_callback('tool_tenant\\tenancy', 'get_users_subquery',
+            [true, true, 'grd.userid'], '');
 
         // Prepare the query condition.
         if (!empty($id)) {
-            $where = ' grd.id = :id';
+            $where = (!empty($wheretenant) ? $wheretenant : "")." grd.id = :id ";
         } else {
-            $where = ' grd.timemodified > :timemodified';
+            $where = (!empty($wheretenant) ? $wheretenant : "")." grd.timemodified > :timemodified ";
         }
         $queryparams = [
                             'id' => (!empty($params['id']) ? $params['id'] : ''),
@@ -1097,6 +1484,9 @@ class local_myddleware_external extends external_api {
                 grd.aggregationweight,
                 itm.courseid,
                 itm.itemname,
+                itm.itemtype,
+                itm.itemmodule,
+                itm.iteminstance,
                 crs.fullname course_fullname,
                 crs.shortname course_shortname
             FROM {grade_grades} grd
@@ -1158,6 +1548,9 @@ class local_myddleware_external extends external_api {
                         PARAM_FLOAT, get_string('return_aggregationweight', 'local_myddleware')),
                     'courseid' => new external_value(PARAM_INT, get_string('return_courseid', 'local_myddleware')),
                     'itemname' => new external_value(PARAM_TEXT, get_string('return_itemname', 'local_myddleware')),
+                    'itemtype' => new external_value(PARAM_TEXT, get_string('return_itemtype', 'local_myddleware')),
+                    'itemmodule' => new external_value(PARAM_TEXT, get_string('return_itemmodule', 'local_myddleware')),
+                    'iteminstance' => new external_value(PARAM_TEXT, get_string('return_iteminstance', 'local_myddleware')),
                     'course_fullname' => new external_value(PARAM_TEXT, get_string('return_fullname', 'local_myddleware')),
                     'course_shortname' => new external_value(PARAM_TEXT, get_string('return_shortname', 'local_myddleware')),
                 ]
@@ -1165,4 +1558,129 @@ class local_myddleware_external extends external_api {
         );
     }
 
+    /**
+     * Returns description of method parameters.
+     * @return external_function_parameters.
+     */
+    public static function get_quiz_attempts_parameters() {
+        return new external_function_parameters(
+            [
+                'time_modified' => new external_value(
+                    PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'id' => new external_value(PARAM_INT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
+            ]
+        );
+    }
+
+    /**
+     * This function search completion created after the date $timemodified in parameters.
+     * @param int $timemodified
+     * @param int $id
+     * @return an array with the detail of each quizzes.
+     */
+    public static function get_quiz_attempts($timemodified, $id) {
+        global $USER, $DB;
+
+        // Parameter validation.
+        $params = self::validate_parameters(
+            self::get_users_completion_parameters(),
+            ['time_modified' => $timemodified, 'id' => $id]
+        );
+
+        // Context validation.
+        $context = context_user::instance($USER->id);
+        self::validate_context($context);
+
+        require_capability('moodle/user:viewdetails', $context);
+
+        // Prepare the query condition.
+        if (!empty($id)) {
+            $where = ' att.id = :id';
+        } else {
+            $where = ' att.timemodified > :timemodified';
+        }
+        $queryparams = [
+                            'id' => (!empty($params['id']) ? $params['id'] : ''),
+                            'timemodified' => (!empty($params['time_modified']) ? $params['time_modified'] : ''),
+                        ];
+
+        // Retrieve token list (including linked users firstname/lastname and linked services name).
+        $sql = "
+            SELECT
+                att.id,
+                att.userid,
+                att.attempt,
+                att.state,
+                att.timefinish,
+                att.timemodified,
+                att.timemodifiedoffline,
+                att.timecheckstate,
+                att.sumgrades,
+                att.gradednotificationsenttime,
+                att.uniqueid,
+                qz.id as quizid,
+                qz.course as courseid,
+                qz.name,
+                grd.grade,
+                cm.id as cmid
+            FROM {quiz_attempts} att
+            INNER JOIN {quiz} qz
+                ON qz.id = att.quiz
+            LEFT JOIN {quiz_grades} grd
+                ON grd.quiz = att.quiz
+                AND grd.userid = att.userid
+            INNER JOIN {course_modules} cm
+                ON cm.instance = qz.id
+                INNER JOIN {modules} md
+                    ON md.id = cm.module
+                    AND md.name = 'quiz'
+            WHERE
+                ".$where."
+            ORDER BY att.timemodified ASC, att.id ASC
+                ";
+        $rs = $DB->get_recordset_sql($sql, $queryparams);
+
+        $quizattempts = [];
+        if (!empty($rs)) {
+            foreach ($rs as $attemps) {
+                foreach ($attemps as $key => $value) {
+                    $attemp[$key] = $value;
+                }
+                $quizattempts[] = $attemp;
+            }
+        }
+        return $quizattempts;
+    }
+
+     /**
+      * Returns description of method result value.
+      * @return external_description.
+      */
+    public static function get_quiz_attempts_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                [
+                    'id' => new external_value(PARAM_INT, get_string('return_id', 'local_myddleware')),
+                    'userid' => new external_value(PARAM_INT, get_string('return_userid', 'local_myddleware')),
+                    'attempt' => new external_value(PARAM_INT, get_string('return_attempt', 'local_myddleware')),
+                    'state' => new external_value(PARAM_TEXT, get_string('return_state', 'local_myddleware')),
+                    'timefinish' => new external_value(PARAM_INT, get_string('return_timefinish', 'local_myddleware')),
+                    'timemodified' => new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware')),
+                    'timemodifiedoffline' => new external_value(
+                        PARAM_INT, get_string('return_timemodifiedoffline', 'local_myddleware')),
+                    'timecheckstate' => new external_value(PARAM_INT, get_string('return_timecheckstate', 'local_myddleware')),
+                    'sumgrades' => new external_value(PARAM_FLOAT, get_string('return_sumgrades', 'local_myddleware')),
+                    'gradednotificationsenttime' => new external_value(
+                        PARAM_INT, get_string('return_gradednotificationsenttime', 'local_myddleware')),
+                    'uniqueid' => new external_value(PARAM_INT, get_string('return_uniqueid', 'local_myddleware')),
+                    'quizid' => new external_value(PARAM_INT, get_string('return_quizid', 'local_myddleware')),
+                    'courseid' => new external_value(PARAM_INT, get_string('return_courseid', 'local_myddleware')),
+                    'name' => new external_value(PARAM_TEXT, get_string('return_name', 'local_myddleware')),
+                    'grade' => new external_value(PARAM_FLOAT, get_string('return_grade', 'local_myddleware')),
+                    'cmid' => new external_value(PARAM_INT, get_string('return_cmid', 'local_myddleware')),
+                ]
+            )
+        );
+    }
 }
+

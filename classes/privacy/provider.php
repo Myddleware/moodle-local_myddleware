@@ -14,9 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Privacy provider implementation for local_myddleware
+ *
+ * @package    local_myddleware
+ * @copyright  2017 Myddleware
+ * @author     Myddleware ltd
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace myddleware\privacy;
 
 use core_privacy\local\metadata\collection;
+
 
 /**
  * Privacy provider for local_myddleware implementing null provider

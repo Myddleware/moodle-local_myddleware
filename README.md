@@ -5,35 +5,34 @@
 Here is the list of available modules in source (reading) and target (writing) :
 
 | Module | Source | Target |
-| --- | :---: | :---: |
-| Courses | :heavy_check_mark: | :heavy_check_mark: |
-| Users | :heavy_check_mark: | :heavy_check_mark: |
-| Group members |  | :heavy_check_mark: |
-| Groups |  | :heavy_check_mark: |
-| Enrollment | :heavy_check_mark: | :heavy_check_mark: |
-| Unenrollment |  | :heavy_check_mark: |
-| Notes |  | :heavy_check_mark: |
-| Courses completion | :heavy_check_mark: |  |
-| Activities completion | :heavy_check_mark: |  |
-| Courses last access | :heavy_check_mark: |  |
-| Competencies module completion | :heavy_check_mark: |  |
-| User competencies | :heavy_check_mark: |  |
-| User grades | :heavy_check_mark: |  |
+| --- | --- | --- |
+| Courses | X | X |
+| Users | X | X |
+| Group members | X | X |
+| Groups | X | X |
+| Enrollment | X | X |
+| Unenrollment |  | X |
+| Notes |  | X |
+| Courses completion | X |  |
+| Activities completion | X |  |
+| Courses last access | X |  |
+| Competencies module completion | X |  |
+| User competencies | X |  |
+| User grades | X |  |
 
 Need more functionalities ? Please [Contact us](http://www.myddleware.com/contact-us)
 
 Please, install first the [Myddleware Moodle plugin](https://moodle.org/plugins/local_myddleware)
 
-Generate your token by following this tutorial : [documentation moodle](https://docs.moodle.org/400/en/Using_web_services)
+Generate your token by following this tutorial : [here](https://docs.moodle.org/400/en/Using_web_services)
 
-You can use this system role and assigned it to the user linked to your token. Click on this link to download it, then unzip it before importing it in Moodle :
-[myddleware_moodle_role](https://github.com/Myddleware/moodle-local_myddleware/files/9828988/myddleware_moodle_role_1.3-1.4.zip)
+You can use this system role and assigned it to the user linked to your token. Click on this link to download it, then unzip it before importing it in Moodle : [myddleware_moodle_role](http://community.myddleware.com/wp-content/uploads/2016/11/myddleware_moodle_role_1.3-1.zip)
 
 To assigned a role, go to Site administration -> Users -> Assign system roles
 
 ![moodle_assigne_role1](http://community.myddleware.com/wp-content/uploads/2016/11/moodle_assigne_role1-1024x408.png)
 
-Choose Myddleware role :
+Choose Myddleware role
 
 ![moodle_assigne_role2](http://community.myddleware.com/wp-content/uploads/2016/11/moodle_assigne_role2.png)
 
@@ -59,7 +58,7 @@ In the blue box are the standard functions. In the red box are the custom functi
 
 Add the URL of your Moodle instance and your token in Myddleware 
 
-![interface_myddleware](https://user-images.githubusercontent.com/95077335/196911939-3d02252a-2a64-4b03-b4de-f96343e09abd.png)
+![image](https://user-images.githubusercontent.com/95077335/196911939-3d02252a-2a64-4b03-b4de-f96343e09abd.png)
 
 *Congratulations, you‘ve created your Moodle connector ! You can now use it to synchronise data to and from this solution.*
 
@@ -82,7 +81,7 @@ This community is ours : let’s all contribute, make it a friendly, helpful spa
 
 Please don’t hide any precious skills from us, whether it is coding, translation, connectors creation, .... the list goes on! The whole community could then benefit from these!
 
-Find us here : [Myddleware](http://www.myddleware.com)
+Find us here : [Myddleware](http://www.myddleware.com">www.myddleware.com)
 
 *We created it, you own it!*
 
