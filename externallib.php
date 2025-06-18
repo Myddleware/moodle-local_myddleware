@@ -1682,5 +1682,200 @@ class local_myddleware_external extends external_api {
             )
         );
     }
-}
 
+
+
+    /**
+     * Returns description of method parameters.
+     * @return external_function_parameters.
+     */
+    public static function get_course_completion_percentage_parameters() {
+        return new external_function_parameters(
+            [
+                'time_modified' => new external_value(
+                    PARAM_INT, get_string('param_timemodified', 'local_myddleware'), VALUE_DEFAULT, 0),
+                'id' => new external_value(PARAM_TEXT, get_string('param_id', 'local_myddleware'), VALUE_DEFAULT, 0),
+            ]
+        );
+    }
+
+    /**
+     * This function calculates the completion percentage for course completions.
+     * @param int $timemodified
+     * @param int $id
+     * @return array with completion percentage details
+     */
+    public static function get_course_completion_percentage($timemodified, $id) {
+        global $DB, $CFG;
+        require_once($CFG->libdir . '/completionlib.php');
+        $returncompletions = [];
+
+        // Parameter validation.
+        $params = self::validate_parameters(
+            self::get_course_completion_percentage_parameters(),
+            ['time_modified' => $timemodified, 'id' => $id]
+        );
+
+        // Context validation.
+        $context = context_system::instance();
+        self::validate_context($context);
+
+        // Get the last module completion id for the user/course ids.
+        if (!empty($params['id'])) {
+            $sql = "
+                SELECT
+                    cmc.id,
+                    cmc.userid,
+                    cmc.completionstate,
+                    cmc.timemodified,
+                    cm.id coursemoduleid,
+                    cm.module moduletype,
+                    cm.instance,
+                    cm.section,
+                    cm.course courseid
+                FROM {course_modules_completion} cmc
+                INNER JOIN {course_modules} cm
+                    ON cm.id = cmc.coursemoduleid
+                WHERE
+                        cmc.userid = :userid
+                    AND cm.course = :courseid
+                ORDER BY timemodified DESC
+                LIMIT 1
+                ";
+            // Get user from id  (id format <user_id>_<course_id>.
+            $ids = explode('_', $params['id']);
+            $queryparams = [
+                                 'userid' => $ids[0],
+                                 'courseid' => $ids[1],
+                            ];
+            $rs = $DB->get_recordset_sql($sql, $queryparams);
+            if (!empty($rs)) {
+                // Get the id of the completion found.
+                foreach ($rs as $value) {
+                    $id = current($value);
+                }
+            }
+        }
+        // Tenant filter and course validation are done in this function.
+        $selectedcompletions = self::get_users_completion($timemodified, $id);
+
+        if (!empty($selectedcompletions)) {
+            // Remove duplicate completion with key user/course (keep the newest one).
+            // In case of several modules have been completed by the same user in the same course.
+            $selectedcompletionsclean = [];
+            foreach ($selectedcompletions as $key => $selectedcompletion) {
+                $key = $selectedcompletion['userid'].'_'.$selectedcompletion['courseid'];
+                if (!isset($selectedcompletionsclean[$key]) ||
+                    $selectedcompletion['timemodified'] > $selectedcompletionsclean[$key]['timemodified']) {
+                    $selectedcompletionsclean[$key] = $selectedcompletion;
+                }
+            }
+            // Should never happen.
+            if (empty($selectedcompletionsclean)) {
+                return [];
+            }
+
+            // Process each completion record and calculate percentage.
+            foreach ($selectedcompletionsclean as $selectedcompletion) {
+                // Calculate completion percentage for this user/course combination.
+                $percentage = 0;
+                $completedactivities = 0;
+                $totalactivities = 0;
+                $overallstatus = 'Unknown';
+                $error = '';
+                try {
+                    // Get the course object.
+                    $course = $DB->get_record('course', ['id' => $selectedcompletion['courseid']], '*', MUST_EXIST);
+                    // Check if completion is enabled for this course.
+                    $completion = new completion_info($course);
+                    if ($completion->is_enabled()) {
+                        // Get course completion status.
+                        $iscomplete = $completion->is_course_complete($selectedcompletion['userid']);
+                        $overallstatus = $iscomplete ? 'Complete' : 'Incomplete';
+
+                        // Get all activities with completion tracking.
+                        $modinfo = get_fast_modinfo($course, $selectedcompletion['userid']);
+
+                        foreach ($modinfo->get_cms() as $cm) {
+                            // Only count activities that have completion tracking enabled.
+                            if ($cm->completion != COMPLETION_TRACKING_NONE) {
+                                $totalactivities++;
+                                // Get completion data for this activity.
+                                $completiondata = $completion->get_data($cm, false, $selectedcompletion['userid']);
+                                // Check if activity is completed.
+                                if ($completiondata->completionstate == COMPLETION_COMPLETE ||
+                                    $completiondata->completionstate == COMPLETION_COMPLETE_PASS) {
+                                    $completedactivities++;
+                                }
+                            }
+                        }
+                        // Calculate percentage.
+                        if ($totalactivities > 0) {
+                            $percentage = round(($completedactivities / $totalactivities) * 100, 2);
+                        }
+                        // If no activities with completion tracking, try course-level completion criteria.
+                        if ($totalactivities == 0) {
+                            $criteria = completion_criteria::fetch_all(['course' => $selectedcompletion['courseid']]);
+                            $totalcriteria = count($criteria);
+                            $completedcriteria = 0;
+                            foreach ($criteria as $criterion) {
+                                $completioncriterion = $criterion->get_completion($selectedcompletion['userid']);
+                                if ($completioncriterion && $completioncriterion->is_complete()) {
+                                    $completedcriteria++;
+                                }
+                            }
+                            $totalactivities = $totalcriteria;
+                            $completedactivities = $completedcriteria;
+
+                            if ($totalcriteria > 0) {
+                                $percentage = round(($completedcriteria / $totalcriteria) * 100, 2);
+                            }
+                        }
+                    } else {
+                        $error = 'Completion tracking not enabled';
+                    }
+                } catch (Exception $e) {
+                    $error = 'Exception: ' . $e->getMessage();
+                }
+
+                // Prepare result with same structure as course_completion_by_date but with percentage.
+                $completiondata = [
+                    'id' => $selectedcompletion['userid'].'_'.$selectedcompletion['courseid'],
+                    'userid' => $selectedcompletion['userid'],
+                    'courseid' => $selectedcompletion['courseid'],
+                    'percentage' => $percentage,
+                    'completed_activities' => $completedactivities,
+                    'total_activities' => $totalactivities,
+                    'overall_status' => $overallstatus,
+                    'timemodified' => $selectedcompletion['timemodified'],
+                    'error' => $error,
+                ];
+                $returncompletions[] = $completiondata;
+            }
+        }
+        return $returncompletions;
+    }
+
+    /**
+     * Returns description of method result value.
+     * @return external_description.
+     */
+    public static function get_course_completion_percentage_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                [
+                    'id' => new external_value(PARAM_TEXT, get_string('return_id', 'local_myddleware')),
+                    'userid' => new external_value(PARAM_INT, get_string('return_userid', 'local_myddleware')),
+                    'courseid' => new external_value(PARAM_INT, get_string('return_courseid', 'local_myddleware')),
+                    'timemodified' => new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware')),
+                    'percentage' => new external_value(PARAM_FLOAT, get_string('return_percentage', 'local_myddleware')),
+                    'completed_activities' => new external_value(
+                        PARAM_INT, get_string('return_completedactivities', 'local_myddleware')),
+                    'total_activities' => new external_value(PARAM_INT, get_string('return_totalactivities', 'local_myddleware')),
+                    'overall_status' => new external_value(PARAM_TEXT, get_string('return_overallstatus', 'local_myddleware')),
+                    'error' => new external_value(PARAM_TEXT, 'Error message if any'),
+                ]
+            )
+        );
+    }
+}
