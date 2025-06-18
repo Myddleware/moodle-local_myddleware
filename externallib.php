@@ -1708,7 +1708,7 @@ class local_myddleware_external extends external_api {
     public static function get_course_completion_percentage($timemodified, $id) {
         global $DB, $CFG;
         require_once($CFG->libdir . '/completionlib.php');
-		$returncompletions = [];
+        $returncompletions = [];
 
         // Parameter validation.
         $params = self::validate_parameters(
@@ -1720,7 +1720,7 @@ class local_myddleware_external extends external_api {
         $context = context_system::instance();
         self::validate_context($context);
 
-        // Get the last module completion id for the user/course ids        
+        // Get the last module completion id for the user/course ids.
         if (!empty($params['id'])) {
             $sql = "
                 SELECT
@@ -1737,39 +1737,40 @@ class local_myddleware_external extends external_api {
                 INNER JOIN {course_modules} cm
                     ON cm.id = cmc.coursemoduleid
                 WHERE
-                        cmc.userid = :userid 
+                        cmc.userid = :userid
                     AND cm.course = :courseid
                 ORDER BY timemodified DESC
                 LIMIT 1
                 ";
-            // Get user from id  (id format <user_id>_<course_id>
-            $ids = explode('_',$params['id']);
+            // Get user from id  (id format <user_id>_<course_id>.
+            $ids = explode('_', $params['id']);
             $queryparams = [
                                  'userid' => $ids[0],
                                  'courseid' => $ids[1],
                             ];
             $rs = $DB->get_recordset_sql($sql, $queryparams);
             if (!empty($rs)) {
-                // Get the id of the completion found
-                foreach($rs as $value) {
+                // Get the id of the completion found.
+                foreach ($rs as $value) {
                     $id = current($value);
                 }
             }
         }
-        // Tenant filter and course validation are done in this function
+        // Tenant filter and course validation are done in this function.
         $selectedcompletions = self::get_users_completion($timemodified, $id);
 
         if (!empty($selectedcompletions)) {
-            // Remove duplicate completion with key user/course (keep the newest one)
-            // In case of several modules have been completed by the same user in the same course
+            // Remove duplicate completion with key user/course (keep the newest one).
+            // In case of several modules have been completed by the same user in the same course.
             $selectedcompletionsclean = [];
             foreach ($selectedcompletions as $key => $selectedcompletion) {
                 $key = $selectedcompletion['userid'].'_'.$selectedcompletion['courseid'];
-                if (!isset($selectedcompletionsclean[$key]) || $selectedcompletion['timemodified'] > $selectedcompletionsclean[$key]['timemodified']) {
+                if (!isset($selectedcompletionsclean[$key]) ||
+                    $selectedcompletion['timemodified'] > $selectedcompletionsclean[$key]['timemodified']) {
                     $selectedcompletionsclean[$key] = $selectedcompletion;
                 }
             }
-            // Should never happen
+            // Should never happen.
             if (empty($selectedcompletionsclean)) {
                 return [];
             }
@@ -1782,11 +1783,9 @@ class local_myddleware_external extends external_api {
                 $totalactivities = 0;
                 $overallstatus = 'Unknown';
                 $error = '';
- 
                 try {
                     // Get the course object.
                     $course = $DB->get_record('course', ['id' => $selectedcompletion['courseid']], '*', MUST_EXIST);
-                    
                     // Check if completion is enabled for this course.
                     $completion = new completion_info($course);
                     if ($completion->is_enabled()) {
@@ -1801,12 +1800,10 @@ class local_myddleware_external extends external_api {
                             // Only count activities that have completion tracking enabled.
                             if ($cm->completion != COMPLETION_TRACKING_NONE) {
                                 $totalactivities++;
-                                
                                 // Get completion data for this activity.
                                 $completiondata = $completion->get_data($cm, false, $selectedcompletion['userid']);
-                                
                                 // Check if activity is completed.
-                                if ($completiondata->completionstate == COMPLETION_COMPLETE || 
+                                if ($completiondata->completionstate == COMPLETION_COMPLETE ||
                                     $completiondata->completionstate == COMPLETION_COMPLETE_PASS) {
                                     $completedactivities++;
                                 }
@@ -1822,8 +1819,8 @@ class local_myddleware_external extends external_api {
                             $totalcriteria = count($criteria);
                             $completedcriteria = 0;
                             foreach ($criteria as $criterion) {
-                                $completion_criterion = $criterion->get_completion($selectedcompletion['userid']);
-                                if ($completion_criterion && $completion_criterion->is_complete()) {
+                                $completioncriterion = $criterion->get_completion($selectedcompletion['userid']);
+                                if ($completioncriterion && $completioncriterion->is_complete()) {
                                     $completedcriteria++;
                                 }
                             }
@@ -1872,7 +1869,8 @@ class local_myddleware_external extends external_api {
                     'courseid' => new external_value(PARAM_INT, get_string('return_courseid', 'local_myddleware')),
                     'timemodified' => new external_value(PARAM_INT, get_string('return_timemodified', 'local_myddleware')),
                     'percentage' => new external_value(PARAM_FLOAT, get_string('return_percentage', 'local_myddleware')),
-                    'completed_activities' => new external_value(PARAM_INT, get_string('return_completedactivities', 'local_myddleware')),
+                    'completed_activities' => new external_value(
+                        PARAM_INT, get_string('return_completedactivities', 'local_myddleware')),
                     'total_activities' => new external_value(PARAM_INT, get_string('return_totalactivities', 'local_myddleware')),
                     'overall_status' => new external_value(PARAM_TEXT, get_string('return_overallstatus', 'local_myddleware')),
                     'error' => new external_value(PARAM_TEXT, 'Error message if any'),

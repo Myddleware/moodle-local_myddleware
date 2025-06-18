@@ -125,7 +125,7 @@ $functions = [
             'description' => 'Return quizzes of users',
             'type'        => 'read',
     ],
-	'local_myddleware_get_course_completion_percentage' => [
+    'local_myddleware_get_course_completion_percentage' => [
             'classname'   => 'local_myddleware_external',
             'methodname'  => 'get_course_completion_percentage',
             'classpath'   => 'local/myddleware/externallib.php',
